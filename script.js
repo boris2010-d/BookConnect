@@ -3,7 +3,7 @@
  * BookConnect — Stage 2
  * Catalog, search, filters and BG/EN translations.
  * Reservations are currently a local demo.
- * Supabase integration will be added next.
+ * Book data is loaded from Supabase; reservations are local demo only.
  */
 const SUPABASE_URL = "https://hnbyqcohznceoefmzzpl.supabase.co";
 
@@ -298,7 +298,7 @@ async function loadBooksFromSupabase() {
 
   if (error) {
     console.error("Supabase error:", error);
-    showNotice("Грешка при зареждането на книгите.");
+    showNotice(language === "bg" ? "Грешка при зареждането на книгите от базата." : "Could not load books from the database.");
     return;
   }
 
@@ -315,8 +315,8 @@ async function loadBooksFromSupabase() {
         bg: item.author_bg,
         en: item.author_en
       },
-      genre: item.genres.code,
-      copies: item.copies.filter(
+      genre: item.genres?.code || "classic",
+      copies: (item.copies || []).filter(
         copy => copy.status === "available"
       ).length,
       cover: item.cover_url,
@@ -599,3 +599,4 @@ document.addEventListener("keydown", event => {
 // INITIAL LANGUAGE
 
 setLanguage("bg");
+loadBooksFromSupabase();
