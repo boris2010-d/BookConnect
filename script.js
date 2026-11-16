@@ -285,6 +285,52 @@ function setLanguage(lang) {
   }
 }
 
+
+async function loadBooksFromSupabase() {
+  const { data, error } = await db
+    .from("books")
+    .select(`
+      *,
+      genres(code),
+      copies(status)
+    `)
+    .order("id");
+
+  if (error) {
+    console.error("Supabase error:", error);
+    showNotice("Грешка при зареждането на книгите.");
+    return;
+  }
+
+  books.length = 0;
+
+  data.forEach(item => {
+    books.push({
+      id: item.id,
+      title: {
+        bg: item.title_bg,
+        en: item.title_en
+      },
+      author: {
+        bg: item.author_bg,
+        en: item.author_en
+      },
+      genre: item.genres.code,
+      copies: item.copies.filter(
+        copy => copy.status === "available"
+      ).length,
+      cover: item.cover_url,
+      description: {
+        bg: item.description_bg,
+        en: item.description_en
+      }
+    });
+  });
+
+  renderBooks();
+  renderReservations();
+}
+
 // BOOK CATALOG
 
 function renderBooks() {
