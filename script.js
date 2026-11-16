@@ -81,8 +81,12 @@ function searchBooks() {
 
     const filteredBooks = books.filter(function(book) {
         return book.title.toLocaleLowerCase("bg-BG").includes(query) ||
-               book.author.toLocaleLowerCase("bg-BG").includes(query);
+               book.author.toLocaleLowerCase("bg-BG").includes(query) ||
+               book.genre.toLocaleLowerCase("bg-BG").includes(query);
     });
+
+    displayBooks(filteredBooks);
+}
 
     displayBooks(filteredBooks);
 }
