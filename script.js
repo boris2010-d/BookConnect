@@ -18,6 +18,7 @@ const translations = {
   bg: {
     home: "Начало",
     catalog: "Каталог",
+    librarianNav: "Библиотекар",
     myBooks: "Моите книги",
     howNav: "Как работи",
     aboutNav: "За библиотеката",
@@ -76,6 +77,7 @@ const translations = {
   en: {
     home: "Home",
     catalog: "Catalog",
+    librarianNav: "Librarian",
     myBooks: "My books",
     howNav: "How it works",
     aboutNav: "About the library",
@@ -209,6 +211,8 @@ function setLanguage(lang) {
 
 
 async function loadBooksFromSupabase() {
+  document.getElementById("noResults").textContent = language === "bg" ? "Зареждане на книгите..." : "Loading books...";
+  document.getElementById("noResults").style.display = "block";
   const { data, error } = await db
     .from("books")
     .select(`
@@ -227,6 +231,7 @@ async function loadBooksFromSupabase() {
   }
 
   books.length = 0;
+  document.getElementById("noResults").textContent = t("noResults");
 
   data.forEach(item => {
     books.push({
