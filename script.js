@@ -5,6 +5,14 @@
  * Reservations are currently a local demo.
  * Supabase integration will be added next.
  */
+const SUPABASE_URL = "https://hnbyqcohznceoefmzzpl.supabase.co";
+
+const SUPABASE_KEY = "sb_publishable_3uTZGoFy9Stvq711wkTXxg_JytjGLNA";
+
+const db = window.supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_KEY
+);
 
 const translations = {
   bg: {
