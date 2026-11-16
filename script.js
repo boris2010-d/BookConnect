@@ -132,86 +132,8 @@ const translations = {
   }
 };
 
-// Temporary sample data.
-// In the next step these books will come from Supabase.
-
-const books = [
-  {
-    id: 1,
-    title: { bg: "Под игото", en: "Under the Yoke" },
-    author: { bg: "Иван Вазов", en: "Ivan Vazov" },
-    genre: "classic",
-    copies: 3,
-    cover: "https://placehold.co/360x500/e8d1a6/563c20?text=Pod+Igoto",
-    description: {
-      bg: "Класически български роман за живота и борбата за свобода преди Априлското въстание.",
-      en: "A classic Bulgarian novel about life and the struggle for freedom before the April Uprising."
-    }
-  },
-  {
-    id: 2,
-    title: { bg: "Малкият принц", en: "The Little Prince" },
-    author: { bg: "Антоан дьо Сент-Екзюпери", en: "Antoine de Saint-Exupéry" },
-    genre: "children",
-    copies: 5,
-    cover: "https://placehold.co/360x500/fce8bb/6d4c1c?text=The+Little+Prince",
-    description: {
-      bg: "Приказна история за приятелството, любовта и важните неща в живота.",
-      en: "A poetic story about friendship, love and the things that truly matter."
-    }
-  },
-  {
-    id: 3,
-    title: {
-      bg: "Хари Потър и Философският камък",
-      en: "Harry Potter and the Philosopher's Stone"
-    },
-    author: { bg: "Дж. К. Роулинг", en: "J. K. Rowling" },
-    genre: "fantasy",
-    copies: 2,
-    cover: "https://placehold.co/360x500/18395b/ffffff?text=Harry+Potter",
-    description: {
-      bg: "Младо момче открива, че е магьосник, и започва обучението си в Хогуортс.",
-      en: "A young boy discovers he is a wizard and begins studying at Hogwarts."
-    }
-  },
-  {
-    id: 4,
-    title: { bg: "1984", en: "1984" },
-    author: { bg: "Джордж Оруел", en: "George Orwell" },
-    genre: "modern",
-    copies: 4,
-    cover: "https://placehold.co/360x500/9c3030/ffffff?text=1984",
-    description: {
-      bg: "Антиутопичен роман за общество, контролирано чрез наблюдение и пропаганда.",
-      en: "A dystopian novel about a society controlled by surveillance and propaganda."
-    }
-  },
-  {
-    id: 5,
-    title: { bg: "Бай Ганьо", en: "Bay Ganyo" },
-    author: { bg: "Алеко Константинов", en: "Aleko Konstantinov" },
-    genre: "classic",
-    copies: 0,
-    cover: "https://placehold.co/360x500/b2d0c5/173d37?text=Bay+Ganyo",
-    description: {
-      bg: "Сатирично произведение, представящо приключенията на Бай Ганьо.",
-      en: "A satirical work following the adventures of Bay Ganyo."
-    }
-  },
-  {
-    id: 6,
-    title: { bg: "Хобит", en: "The Hobbit" },
-    author: { bg: "Дж. Р. Р. Толкин", en: "J. R. R. Tolkien" },
-    genre: "fantasy",
-    copies: 2,
-    cover: "https://placehold.co/360x500/49704b/ffffff?text=The+Hobbit",
-    description: {
-      bg: "Фантастично приключение на Билбо Бегинс, който тръгва на пътешествие с джуджета.",
-      en: "A fantasy adventure following Bilbo Baggins on a journey with dwarves."
-    }
-  }
-];
+// Source of truth: public.books joined with genres and copies in Supabase.
+const books = [];
 
 let language = "bg";
 let selectedBookId = null;
@@ -224,7 +146,7 @@ try {
 
   if (Array.isArray(saved)) {
     reservations = saved.filter(
-      id => Number.isInteger(id) && books.some(book => book.id === id)
+      id => Number.isInteger(id)
     );
   }
 } catch (error) {
@@ -298,6 +220,8 @@ async function loadBooksFromSupabase() {
 
   if (error) {
     console.error("Supabase error:", error);
+    document.getElementById("noResults").textContent = language === "bg" ? "Неуспешно зареждане от базата данни." : "Database loading failed.";
+    document.getElementById("noResults").style.display = "block";
     showNotice(language === "bg" ? "Грешка при зареждането на книгите от базата." : "Could not load books from the database.");
     return;
   }
