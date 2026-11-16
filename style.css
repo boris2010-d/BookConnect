@@ -544,3 +544,32 @@ footer p {
     }
 }
 
+
+/* Stage 2 — second screen */
+.stage-two {padding-top:50px;padding-bottom:75px;min-height:70vh}
+.stage-two .section-title {align-items:flex-start}
+.stage-two h1 {font-size:clamp(28px,4vw,42px);margin:0 0 14px}
+.stage-two p {line-height:1.6}
+.stats-grid {display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;margin:20px 0 35px}
+.stat-card {display:flex;flex-direction:column;gap:14px;background:var(--light);border:1px solid var(--border);border-radius:14px;padding:24px}
+.stat-card strong {font-size:36px;color:var(--blue)}
+.panel {border:1px solid var(--border);border-radius:14px;padding:24px;margin:22px 0}
+.panel h2 {margin-bottom:20px}
+.table-scroll {overflow-x:auto}
+.inventory-table {border-collapse:collapse;width:100%;min-width:600px;text-align:left}
+.inventory-table th,.inventory-table td {padding:15px 12px;border-bottom:1px solid var(--border)}
+.inventory-table th {background:var(--light)}
+.form-grid {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin:20px 0}
+.form-grid label {display:flex;flex-direction:column;gap:7px;font-weight:600}
+.form-grid input,.form-grid select {border:1px solid var(--border);border-radius:8px;padding:12px;width:100%;background:white}
+.form-grid button {align-self:end}
+[hidden] {display:none !important}
+@media(max-width:700px) {
+  .stats-grid {grid-template-columns:repeat(2,minmax(0,1fr))}
+  .form-grid {grid-template-columns:1fr}
+  .stage-two .section-title {flex-wrap:wrap}
+}
+@media(max-width:390px) {
+  .stats-grid {grid-template-columns:1fr}
+  .panel {padding:16px}
+}
