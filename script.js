@@ -12,6 +12,20 @@ const db = window.supabase.createClient(
 const translations = {
   bg: {
     home: "Начало",
+    heroKicker: "✦ БИБЛИОТЕКАТА В ТВОЯ ДЖОБ",
+    heroExplore: "Разгледай колекцията ↗",
+    createAccount: "Създай безплатен профил →",
+    accountButton: "Вход / Регистрация",
+    accountEyebrow: "КНИГИТЕ СА ПО-БЛИЗО ОТ ВСЯКОГА",
+    accountFormTitle: "Твоят профил в BookConnect",
+    liveCatalog: "НА ЖИВО ОТ БИБЛИОТЕКАТА",
+    liveBookLabel: "Заглавия",
+    liveCopyLabel: "Свободни екземпляри",
+    liveMyLabel: "Мои резервации",
+    catalogLead: "Открий истории за всеки вкус — с наличности, които се обновяват в реално време.",
+    resetFilters: "Изчисти филтрите ↺",
+    myBooksEyebrow: "МОЯТА БИБЛИОТЕКА",
+    resultsCount: "Показани книги:",
     accountTitle: "Профил",
     accountHelp: "Регистрирай се или влез, за да резервираш реални екземпляри от Supabase.",
     accountEmail: "Имейл", accountPassword: "Парола",
@@ -86,6 +100,20 @@ const translations = {
 
   en: {
     home: "Home",
+    heroKicker: "✦ YOUR LIBRARY, ALWAYS WITH YOU",
+    heroExplore: "Explore the collection ↗",
+    createAccount: "Create a free account →",
+    accountButton: "Login / Register",
+    accountEyebrow: "GREAT STORIES, A CLICK AWAY",
+    accountFormTitle: "Your BookConnect account",
+    liveCatalog: "LIVE LIBRARY STATS",
+    liveBookLabel: "Titles",
+    liveCopyLabel: "Available copies",
+    liveMyLabel: "My reservations",
+    catalogLead: "Explore stories for every taste — with live availability from our database.",
+    resetFilters: "Clear filters ↺",
+    myBooksEyebrow: "MY LIBRARY",
+    resultsCount: "Books shown:",
     accountTitle: "Account",
     accountHelp: "Sign up or sign in to reserve real copies in Supabase.",
     accountEmail: "Email", accountPassword: "Password",
@@ -159,6 +187,8 @@ const translations = {
   }
 };
 
+function t(key) { return translations[language]?.[key] || key; }
+
 // Source of truth: public.books joined with genres and copies in Supabase.
 const books = [];
 
@@ -175,13 +205,14 @@ function hasReservation(bookId) {
   return reservations.some(item => item.book_id === bookId && item.status === "active");
 }
 async function loadReservations() {
-  if (!currentUser) { reservations = []; renderReservations(); renderBooks(); return; }
+  if (!currentUser) { reservations = []; renderReservations(); renderBooks();const mine=document.getElementById("myActiveCount");if(mine)mine.textContent="0"; return; }
   const {data,error} = await db.from("reservations")
     .select("id,book_id,copy_id,status,created_at")
     .eq("user_id",currentUser.id).order("created_at",{ascending:false});
   if (error) { console.error(error); showNotice(t("reservationError")+error.message); return; }
   reservations = data || [];
   renderReservations(); renderBooks();
+  const mine=document.getElementById("myActiveCount");if(mine)mine.textContent=reservations.filter(r=>r.status==="active").length;
 }
 function updateAccount() {
   document.getElementById("accountForm").hidden = Boolean(currentUser);
@@ -189,6 +220,9 @@ function updateAccount() {
   document.getElementById("accountStatus").textContent =
     currentUser ? t("signedInAs") + (currentUser.email || currentUser.id) : t("signedOut");
   renderBooks();
+  refreshAccountButton();
+  const mine = document.getElementById("myActiveCount");
+  if (mine) mine.textContent=reservations.filter(r=>r.status==="active").length;
 }
 // LANGUAGE SWITCHING
 
@@ -213,6 +247,7 @@ function setLanguage(lang) {
   renderBooks();
   renderReservations();
   updateAccount();
+  refreshAccountButton();
 
   if (selectedBookId !== null) {
     openBook(selectedBookId);
@@ -268,6 +303,10 @@ async function loadBooksFromSupabase() {
 
   renderBooks();
   renderReservations();
+  const b=document.getElementById("publicBooksCount");
+  const c=document.getElementById("publicCopiesCount");
+  if(b)b.textContent=books.length;
+  if(c)c.textContent=books.reduce((n,item)=>n+item.copies,0);
 }
 
 // BOOK CATALOG
@@ -300,11 +339,20 @@ function renderBooks() {
     const card = document.createElement("article");
     card.className = "book-card";
 
-    const image = document.createElement("img");
-    image.className = "book-cover";
-    image.src = book.cover;
-    image.alt = book.title[language];
-    image.loading = "lazy";
+    let image;
+    if(book.cover) {
+      image=document.createElement("img");
+      image.className="book-cover";
+      image.src=book.cover;
+      image.alt=book.title[language];
+      image.loading="lazy";
+      image.onerror=()=>{
+        const replacement=createBookCover(book);
+        image.replaceWith(replacement);
+      };
+    } else {
+      image=createBookCover(book);
+    }
 
     const title = document.createElement("h3");
     title.textContent = book.title[language];
@@ -317,6 +365,7 @@ function renderBooks() {
     const genreInner = document.createElement("span");
     genreInner.className = "tag";
     genreInner.textContent = t(book.genre);
+    genreTag.className="book-genre";
     genreTag.appendChild(genreInner);
 
     const count = document.createElement("div");
@@ -340,8 +389,54 @@ function renderBooks() {
 
   document.getElementById("noResults").style.display =
     filtered.length ? "none" : "block";
+  const summary=document.getElementById("resultSummary");
+  if(summary)summary.textContent=t("resultsCount")+" "+filtered.length+" / "+books.length;
 }
 
+// Elegant covers for books without supplied cover images; no external image dependency.
+function createBookCover(book) {
+  const shades=[
+    ["#1c355f","#7692d3"],["#5f365b","#cb8fa4"],
+    ["#163e4e","#76a8a3"],["#593e28","#d4a968"],
+    ["#33315b","#9a91cf"],["#603f36","#dca49a"]
+  ];
+  const pair=shades[Math.abs(Number(book.id)||0)%shades.length];
+  const cover=document.createElement("div");
+  cover.className="book-cover book-cover-art";
+  cover.style.setProperty("--cover-a",pair[0]);
+  cover.style.setProperty("--cover-b",pair[1]);
+  const emblem=document.createElement("span");emblem.className="cover-emblem";emblem.textContent="✦";
+  const title=document.createElement("strong");title.textContent=book.title[language];
+  const author=document.createElement("small");author.textContent=book.author[language];
+  cover.append(emblem,title,author);
+  return cover;
+}
+function resetCatalogFilters(){
+  document.getElementById("catalogSearch").value="";
+  document.getElementById("genreFilter").value="all";
+  document.getElementById("availabilityFilter").value="all";
+  document.getElementById("heroSearch").value="";
+  renderBooks();
+}
+let selectedAuthMode="login";
+function selectAuthMode(mode){
+  selectedAuthMode=mode;
+  const signup=mode==="signup";
+  document.getElementById("tabLogin").classList.toggle("active",!signup);
+  document.getElementById("tabSignup").classList.toggle("active",signup);
+  document.getElementById("signInBtn").hidden=signup;
+  document.getElementById("signUpBtn").hidden=!signup;
+  document.getElementById("accountPassword").autocomplete=signup?"new-password":"current-password";
+}
+function openAccount(mode="login"){
+  selectAuthMode(mode);
+  document.getElementById("account").scrollIntoView({behavior:"smooth",block:"center"});
+  window.setTimeout(()=>document.getElementById("accountEmail").focus(),350);
+}
+function refreshAccountButton(){
+  const label=document.getElementById("navLoginBtn");
+  if(label)label.textContent=currentUser ? "● "+(currentUser.email?.split("@")[0] || "Account") : t("accountButton");
+}
 // HERO SEARCH
 
 function heroSearch() {
@@ -365,7 +460,9 @@ function openBook(id) {
   document.getElementById("modalTitle").textContent =
     book.title[language];
 
-  document.getElementById("modalCover").src = book.cover;
+  const modalCover=document.getElementById("modalCover");
+  modalCover.src=book.cover || "";
+  modalCover.style.display=book.cover?"block":"none";
 
   document.getElementById("modalCover").alt =
     book.title[language];
@@ -525,24 +622,34 @@ document.addEventListener("keydown", event => {
 });
 
 // ACCOUNT AUTHENTICATION
-document.getElementById("accountForm").addEventListener("submit",async event=>{
-  event.preventDefault();
-  const email=document.getElementById("accountEmail").value.trim();
-  const password=document.getElementById("accountPassword").value;
-  const {error}=await db.auth.signInWithPassword({email,password});
-  document.getElementById("accountPassword").value="";
-  if(error)showNotice(t("authError")+error.message);
-});
-document.getElementById("signUpBtn").addEventListener("click",async ()=>{
+async function submitAccount(mode) {
   const form=document.getElementById("accountForm");
   if(!form.reportValidity())return;
   const email=document.getElementById("accountEmail").value.trim();
   const password=document.getElementById("accountPassword").value;
-  const {data,error}=await db.auth.signUp({email,password});
-  document.getElementById("accountPassword").value="";
-  if(error)showNotice(t("authError")+error.message);
-  else if(!data.session)showNotice(t("confirmEmail"));
+  const login=document.getElementById("signInBtn");
+  const signup=document.getElementById("signUpBtn");
+  login.disabled=true;signup.disabled=true;
+  try {
+    if(mode==="signup") {
+      const {data,error}=await db.auth.signUp({email,password});
+      if(error)throw error;
+      showNotice(data.session ? t("signedInAs")+email : t("confirmEmail"));
+    } else {
+      const {error}=await db.auth.signInWithPassword({email,password});
+      if(error)throw error;
+    }
+  } catch(error) {showNotice(t("authError")+error.message);}
+  finally {
+    document.getElementById("accountPassword").value="";
+    login.disabled=false;signup.disabled=false;
+  }
+}
+document.getElementById("accountForm").addEventListener("submit",event=>{
+  event.preventDefault();
+  submitAccount(selectedAuthMode);
 });
+document.getElementById("signUpBtn").addEventListener("click",()=>submitAccount("signup"));
 document.getElementById("signOutBtn").addEventListener("click",async ()=>{
   const {error}=await db.auth.signOut();
   if(error)showNotice(t("authError")+error.message);

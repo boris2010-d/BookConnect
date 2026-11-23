@@ -1,7 +1,7 @@
 name: Stage 2 static checks
 on:
   push:
-    branches: [main]
+    branches: [main, feature/bookconnect-redesign]
   pull_request:
 jobs:
   verify:
