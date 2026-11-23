@@ -31,8 +31,7 @@
                 <a href="#about" data-i18n="aboutNav">За библиотеката</a>
             </nav>
 
-            <div class="nav-right">
-                <button type="button" id="navLoginBtn" class="btn header-login" onclick="openAccount()" data-i18n="accountButton">Вход / Регистрация</button>
+            <div class="nav-right"><button type="button" id="navLoginBtn" class="btn header-login" onclick="openAccount()" data-i18n="accountButton">Вход / Регистрация</button>
                 <button class="lang active" id="bgBtn"
                         onclick="setLanguage('bg')">BG</button>
                 <button class="lang" id="enBtn"
@@ -47,8 +46,7 @@
         <div class="hero" id="home">
             <div class="container">
                 <div class="hero-eyebrow" data-i18n="heroEyebrow">НОВО · ЕТАП 3 · РЕАЛНИ РЕЗЕРВАЦИИ</div>
-                <div class="hero-kicker" data-i18n="heroKicker">✦ БИБЛИОТЕКАТА В ТВОЯ ДЖОБ</div>
-                <h1 data-i18n="welcome">
+                <div class="hero-kicker" data-i18n="heroKicker">✦ БИБЛИОТЕКАТА В ТВОЯ ДЖОБ</div><h1 data-i18n="welcome">
                     Добре дошъл в BookConnect
                 </h1>
 
@@ -71,7 +69,7 @@
                         Търси
                     </button>
                 </div>
-                <div class="hero-cta"><a class="btn hero-secondary" href="#account" data-i18n="heroJoin">Създай профил и резервирай</a><a class="hero-text-link" href="#catalog" data-i18n="heroBrowse">Виж всички книги ↓</a></div>
+                <div class="hero-cta"><a class="btn hero-secondary" href="#account" onclick="openAccount('signup');return false;" data-i18n="heroJoin">Създай профил и резервирай</a><a class="hero-text-link" href="#catalog" data-i18n="heroBrowse">Виж всички книги ↓</a></div>
             </div>
         </div>
 
@@ -132,12 +130,146 @@
             </div>
         </section>
 
+        <!-- STAGE 3 — ACCOUNT AND REAL SUPABASE RESERVATIONS -->
+        <section class="soft account-section" id="account">
+          <div class="container account-intro"><div class="account-description"><span class="section-eyebrow" data-i18n="accountEyebrow">КНИГИТЕ СА ПО-БЛИЗО ОТ ВСЯКОГА</span>
+            <h2 data-i18n="accountTitle">Профил и резервации</h2>
+            <p data-i18n="accountHelp">Регистрирай се или влез, за да резервираш реални екземпляри от Supabase.</p>
+            </div><div class="account-form-card"><div class="form-logo">B✦</div><h3 data-i18n="accountFormTitle">Твоят профил в BookConnect</h3><div class="auth-tabs"><button type="button" id="tabLogin" class="active" onclick="selectAuthMode('login')" data-i18n="signIn">Вход</button><button type="button" id="tabSignup" onclick="selectAuthMode('signup')" data-i18n="signUp">Регистрация</button></div><form id="accountForm" class="form-grid stage-three-form">
+              <label><span data-i18n="accountEmail">Имейл</span><input type="email" id="accountEmail" autocomplete="email" required></label>
+              <label><span data-i18n="accountPassword">Парола</span><input type="password" id="accountPassword" minlength="6" autocomplete="current-password" required></label>
+              <button type="submit" id="signInBtn" class="btn" data-i18n="signIn">Вход</button>
+              <button type="button" id="signUpBtn" class="btn btn-outline" data-i18n="signUp" hidden>Регистрация</button>
+            </form>
+            <p id="accountStatus" role="status" aria-live="polite"></p>
+            <button type="button" id="signOutBtn" class="btn btn-outline" hidden data-i18n="signOut">Изход</button>
+          </div></div>
+        </section>
+
+
+        <!-- КАТАЛОГ -->
+        <section id="catalog">
+            <div class="container">
+
+                <div class="section-title">
+                    <h2 data-i18n="newBooks">
+                        Книги в каталога
+                    </h2>
+                </div>
+
+                <p class="catalog-lead" data-i18n="catalogLead">Избери книга и я резервирай онлайн — наличността се актуализира директно от базата данни.</p>
+                <p class="catalog-lead" data-i18n="catalogLead">Открий истории за всеки вкус — с наличности, които се обновяват в реално време.</p>
+                <div class="filters">
+                    <input
+                        id="catalogSearch"
+                        type="search"
+                        data-placeholder="filterPlaceholder"
+                        placeholder="Търси по заглавие или автор..."
+                    >
+
+                    <select id="genreFilter">
+                        <option value="all" data-i18n="allGenres">
+                            Всички жанрове
+                        </option>
+                        <option value="classic" data-i18n="classic">
+                            Класика
+                        </option>
+                        <option value="children" data-i18n="children">
+                            Детска литература
+                        </option>
+                        <option value="fantasy" data-i18n="fantasy">
+                            Фентъзи
+                        </option>
+                        <option value="modern" data-i18n="modern">
+                            Съвременна
+                        </option>
+                    </select>
+
+                    <select id="availabilityFilter">
+                        <option value="all" data-i18n="allBooks">
+                            Всички книги
+                        </option>
+                        <option value="available" data-i18n="availableOnly">
+                            Само налични
+                        </option>
+                    </select>
+                </div>
+
+                <div class="catalog-toolbar"><span id="resultSummary" role="status" aria-live="polite"></span><a href="#account" data-i18n="catalogAccountLink">Резервирай с профил →</a></div>
+                <div class="catalog-meta"><span id="resultSummary"></span><button type="button" onclick="resetCatalogFilters()" data-i18n="resetFilters">Изчисти филтрите ↺</button></div>
+                <!-- КНИГИТЕ СЕ ЗАРЕЖДАТ ОТ JAVASCRIPT -->
+                <div class="book-grid" id="bookGrid"></div>
+
+                <p class="empty"
+                   id="noResults"
+                   style="display:none"
+                   data-i18n="noResults">
+                    Няма намерени книги.
+                </p>
+
+            </div>
+        </section>
+
+        <!-- КАК РАБОТИ -->
+        <section class="soft" id="how">
+            <div class="container">
+
+                <h2 style="text-align:center;margin-bottom:40px"
+                    data-i18n="howTitle">
+                    Как работи BookConnect?
+                </h2>
+
+                <div class="steps">
+
+                    <div class="step">
+                        <div class="step-number">🔎</div>
+                        <h3 data-i18n="step1">
+                            1. Намери книга
+                        </h3>
+                        <p data-i18n="step1Desc">
+                            Потърси по заглавие, автор или тема.
+                        </p>
+                    </div>
+
+                    <div class="step">
+                        <div class="step-number">📅</div>
+                        <h3 data-i18n="step2">
+                            2. Резервирай
+                        </h3>
+                        <p data-i18n="step2Desc">
+                            Запази избраната книга онлайн.
+                        </p>
+                    </div>
+
+                    <div class="step">
+                        <div class="step-number">📖</div>
+                        <h3 data-i18n="step3">
+                            3. Заеми
+                        </h3>
+                        <p data-i18n="step3Desc">
+                            Вземи книгата от библиотекаря.
+                        </p>
+                    </div>
+
+                    <div class="step">
+                        <div class="step-number">✔</div>
+                        <h3 data-i18n="step4">
+                            4. Върни
+                        </h3>
+                        <p data-i18n="step4Desc">
+                            Върни книгата в определения срок.
+                        </p>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
         <!-- МОИТЕ РЕЗЕРВАЦИИ -->
         <section id="myBooks" class="reservations-section">
             <div class="container">
 
-                <span class="section-kicker" data-i18n="myBooksKicker">МОЯТА БИБЛИОТЕКА</span>\n                <span class="section-eyebrow" data-i18n="myBooksEyebrow">МОЯТА БИБЛИОТЕКА</span>
-                <h2 data-i18n="myReservations">
+                <span class="section-kicker" data-i18n="myBooksKicker">МОЯТА БИБЛИОТЕКА</span>\n                <span class="section-eyebrow" data-i18n="myBooksEyebrow">МОЯТА БИБЛИОТЕКА</span><h2 data-i18n="myReservations">
                     Моите резервации
                 </h2>
 
