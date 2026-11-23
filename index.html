@@ -44,6 +44,7 @@
         <!-- НАЧАЛНА СЕКЦИЯ -->
         <div class="hero" id="home">
             <div class="container">
+                <div class="hero-eyebrow" data-i18n="heroEyebrow">НОВО · ЕТАП 3 · РЕАЛНИ РЕЗЕРВАЦИИ</div>
                 <h1 data-i18n="welcome">
                     Добре дошъл в BookConnect
                 </h1>
@@ -67,8 +68,18 @@
                         Търси
                     </button>
                 </div>
+                <div class="hero-cta"><a class="btn hero-secondary" href="#account" data-i18n="heroJoin">Създай профил и резервирай</a><a class="hero-text-link" href="#catalog" data-i18n="heroBrowse">Виж всички книги ↓</a></div>
             </div>
         </div>
+
+        <section class="live-overview" aria-label="Live library dashboard">
+          <div class="container overview-grid">
+            <div class="overview-intro"><span data-i18n="liveLabel">НА ЖИВО ОТ SUPABASE</span><strong data-i18n="liveTitle">Библиотеката в цифри</strong></div>
+            <div class="overview-stat"><strong id="publicBooksCount">—</strong><span data-i18n="liveBooks">Заглавия</span></div>
+            <div class="overview-stat"><strong id="publicCopiesCount">—</strong><span data-i18n="liveAvailable">Свободни екземпляри</span></div>
+            <div class="overview-stat"><strong id="myActiveCount">0</strong><span data-i18n="liveMine">Мои активни резервации</span></div>
+          </div>
+        </section>
 
         <!-- БЪРЗИ ДЕЙСТВИЯ -->
         <section>
@@ -118,6 +129,23 @@
             </div>
         </section>
 
+        <!-- STAGE 3 — ACCOUNT AND REAL SUPABASE RESERVATIONS -->
+        <section class="soft account-section" id="account">
+          <div class="container">
+            <h2 data-i18n="accountTitle">Профил и резервации</h2>
+            <p data-i18n="accountHelp">Регистрирай се или влез, за да резервираш реални екземпляри от Supabase.</p>
+            <form id="accountForm" class="form-grid stage-three-form">
+              <label><span data-i18n="accountEmail">Имейл</span><input type="email" id="accountEmail" autocomplete="email" required></label>
+              <label><span data-i18n="accountPassword">Парола</span><input type="password" id="accountPassword" minlength="6" autocomplete="current-password" required></label>
+              <button type="submit" id="signInBtn" class="btn" data-i18n="signIn">Вход</button>
+              <button type="button" id="signUpBtn" class="btn btn-outline" data-i18n="signUp">Регистрация</button>
+            </form>
+            <p id="accountStatus" role="status" aria-live="polite"></p>
+            <button type="button" id="signOutBtn" class="btn btn-outline" hidden data-i18n="signOut">Изход</button>
+          </div>
+        </section>
+
+
         <!-- КАТАЛОГ -->
         <section id="catalog">
             <div class="container">
@@ -128,6 +156,7 @@
                     </h2>
                 </div>
 
+                <p class="catalog-lead" data-i18n="catalogLead">Избери книга и я резервирай онлайн — наличността се актуализира директно от базата данни.</p>
                 <div class="filters">
                     <input
                         id="catalogSearch"
@@ -164,6 +193,7 @@
                     </select>
                 </div>
 
+                <div class="catalog-toolbar"><span id="resultSummary" role="status" aria-live="polite"></span><a href="#account" data-i18n="catalogAccountLink">Резервирай с профил →</a></div>
                 <!-- КНИГИТЕ СЕ ЗАРЕЖДАТ ОТ JAVASCRIPT -->
                 <div class="book-grid" id="bookGrid"></div>
 
@@ -232,27 +262,11 @@
             </div>
         </section>
 
-        <!-- STAGE 3 — ACCOUNT AND REAL SUPABASE RESERVATIONS -->
-        <section class="soft" id="account">
-          <div class="container">
-            <h2 data-i18n="accountTitle">Профил и резервации</h2>
-            <p data-i18n="accountHelp">Регистрирай се или влез, за да резервираш реални екземпляри от Supabase.</p>
-            <form id="accountForm" class="form-grid stage-three-form">
-              <label><span data-i18n="accountEmail">Имейл</span><input type="email" id="accountEmail" autocomplete="email" required></label>
-              <label><span data-i18n="accountPassword">Парола</span><input type="password" id="accountPassword" minlength="6" autocomplete="current-password" required></label>
-              <button type="submit" id="signInBtn" class="btn" data-i18n="signIn">Вход</button>
-              <button type="button" id="signUpBtn" class="btn btn-outline" data-i18n="signUp">Регистрация</button>
-            </form>
-            <p id="accountStatus" role="status" aria-live="polite"></p>
-            <button type="button" id="signOutBtn" class="btn btn-outline" hidden data-i18n="signOut">Изход</button>
-          </div>
-        </section>
-
         <!-- МОИТЕ РЕЗЕРВАЦИИ -->
-        <section id="myBooks">
+        <section id="myBooks" class="reservations-section">
             <div class="container">
 
-                <h2 data-i18n="myReservations">
+                <span class="section-kicker" data-i18n="myBooksKicker">МОЯТА БИБЛИОТЕКА</span>\n                <h2 data-i18n="myReservations">
                     Моите резервации
                 </h2>
 
