@@ -187,6 +187,8 @@ const translations = {
   }
 };
 
+function t(key) { return translations[language]?.[key] || key; }
+
 // Source of truth: public.books joined with genres and copies in Supabase.
 const books = [];
 
@@ -210,7 +212,7 @@ async function loadReservations() {
   if (error) { console.error(error); showNotice(t("reservationError")+error.message); return; }
   reservations = data || [];
   renderReservations(); renderBooks();
-  const mine=document.getElementById("liveMyCount");if(mine)mine.textContent=reservations.filter(r=>r.status==="active").length;
+  const mine=document.getElementById("myActiveCount");if(mine)mine.textContent=reservations.filter(r=>r.status==="active").length;
 }
 function updateAccount() {
   document.getElementById("accountForm").hidden = Boolean(currentUser);
