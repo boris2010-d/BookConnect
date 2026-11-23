@@ -199,6 +199,7 @@ function updateAccount() {
 function setLanguage(lang) {
   language = lang;
   document.documentElement.lang = lang;
+  window.bookConnectTheme?.updateButton?.();
 
   document.querySelectorAll("[data-i18n]").forEach(element => {
     element.textContent = t(element.dataset.i18n);
