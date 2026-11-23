@@ -11,6 +11,9 @@ const db = window.supabase.createClient(
 
 const translations = {
   bg: {
+    catalogLead: "Избери книга и я резервирай онлайн — наличността се обновява от базата данни.",
+    catalogAccountLink: "Резервирай с профил →",
+
     home: "Начало",
     accountTitle: "Профил",
     accountHelp: "Регистрирай се или влез, за да резервираш реални екземпляри от Supabase.",
@@ -85,6 +88,9 @@ const translations = {
   },
 
   en: {
+    catalogLead: "Choose a book and reserve it online — availability updates from the database.",
+    catalogAccountLink: "Reserve with an account →",
+
     home: "Home",
     accountTitle: "Account",
     accountHelp: "Sign up or sign in to reserve real copies in Supabase.",
@@ -275,6 +281,49 @@ async function loadBooksFromSupabase() {
   renderReservations();
 }
 
+
+// Generate a legible cover for missing or unavailable external images.
+function fallbackCover(book) {
+  const palette = ["#1c3b61", "#80502e", "#365d4d", "#713b55", "#624a8c", "#945c31"];
+  const shade = palette[Math.abs(Number(book.id) || 0) % palette.length];
+  const title = String(book.title?.[language] || book.title?.bg || "Book");
+  const words = title.trim().split(/\\s+/);
+  const lines = [];
+  let line = "";
+  for (const word of words) {
+    if ((line + " " + word).trim().length > 17 && line) {
+      lines.push(line);
+      line = word;
+    } else {
+      line = (line + " " + word).trim();
+    }
+  }
+  if (line) lines.push(line);
+  const escapeXml = value => String(value).replace(/[&<>"']/g, char =>
+    ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&apos;"}[char]));
+  const maxLines = lines.slice(0, 4);
+  if (lines.length > 4) maxLines[3] += "…";
+  const text = maxLines.map((value, i) =>
+    '<text x="150" y="' + (222 - (maxLines.length - 1) * 20 + i * 40) +
+    '" font-size="27" font-family="Arial,sans-serif" font-weight="bold" text-anchor="middle" fill="#ffffff">' +
+    escapeXml(value) + '</text>').join("");
+  const svg = '<svg xmlns="http://www.w3.org/2000/svg" width="300" height="420" viewBox="0 0 300 420">' +
+    '<rect width="300" height="420" rx="12" fill="' + shade + '"/>' +
+    '<rect x="22" y="22" width="256" height="376" rx="5" fill="none" stroke="#ffffff" stroke-opacity=".35" stroke-width="2"/>' +
+    text + '<text x="150" y="364" font-family="Arial,sans-serif" font-size="14" letter-spacing="2" text-anchor="middle" fill="#f0e6d7">BOOKCONNECT</text></svg>';
+  return "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
+}
+
+function setCover(image, book) {
+  const backup = fallbackCover(book);
+  image.onerror = () => {
+    image.onerror = null;
+    image.src = backup;
+  };
+  image.src = typeof book.cover === "string" && /^https?:\\/\\//i.test(book.cover.trim())
+    ? book.cover.trim() : backup;
+}
+
 // BOOK CATALOG
 
 function renderBooks() {
@@ -307,7 +356,7 @@ function renderBooks() {
 
     const image = document.createElement("img");
     image.className = "book-cover";
-    image.src = book.cover;
+    setCover(image, book);
     image.alt = book.title[language];
     image.loading = "lazy";
 
@@ -370,7 +419,7 @@ function openBook(id) {
   document.getElementById("modalTitle").textContent =
     book.title[language];
 
-  document.getElementById("modalCover").src = book.cover;
+  setCover(document.getElementById("modalCover"), book);
 
   document.getElementById("modalCover").alt =
     book.title[language];
