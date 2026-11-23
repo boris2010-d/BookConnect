@@ -648,3 +648,11 @@ footer p {
 @media (max-width: 600px) {
     .catalog-toolbar { align-items: flex-start; }
 }
+
+/* Catalog: ensure intro and action link have clear, intentional layout. */
+.catalog-lead { margin: 0 0 18px; color: var(--muted); line-height: 1.55; }
+.catalog-toolbar { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin: 14px 0 22px; }
+.catalog-toolbar a { color: var(--blue); font-weight: 700; text-decoration: none; }
+.catalog-toolbar a:hover { text-decoration: underline; }
+.book-cover { display: block; object-fit: cover; }
+@media (max-width: 600px) { .catalog-toolbar { margin-bottom: 18px; } }

@@ -315,14 +315,18 @@ function fallbackCover(book) {
 }
 
 function setCover(image, book) {
+  // Always show a valid local SVG first; slow or missing remote covers cannot show broken-image icons.
   const backup = fallbackCover(book);
-  image.onerror = () => {
-    image.onerror = null;
-    image.src = backup;
+  image.onerror = null;
+  image.src = backup;
+  const remote = typeof book.cover === "string" ? book.cover.trim() : "";
+  if (!/^https:\/\//i.test(remote)) return;
+  const loader = new Image();
+  loader.onload = () => {
+    if (loader.naturalWidth > 0) image.src = remote;
   };
-  const remote = typeof book.cover === "string" &&
-    (book.cover.trim().startsWith("https://") || book.cover.trim().startsWith("http://"));
-  image.src = remote ? book.cover.trim() : backup;
+  loader.onerror = () => { /* Keep the readable generated cover. */ };
+  loader.src = remote;
 }
 
 // BOOK CATALOG
