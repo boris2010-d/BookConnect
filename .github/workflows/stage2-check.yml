@@ -12,3 +12,4 @@ jobs:
         with:
           node-version: '22'
       - run: node tests/check-stage2.mjs
+      - run: node tests/check-stage3.mjs
