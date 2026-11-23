@@ -20,5 +20,5 @@ assert.match(sql,/pg_advisory_xact_lock/i);
 assert.match(sql,/UNIQUE/i);
 assert.match(sql,/auth\.uid\(\)/);
 assert.match(sql,/REVOKE ALL ON FUNCTION/i);
-assert.match(sql,/ENABLE ROW LEVEL SECURITY/i);
+assert.match(sql,/ENABLE ROW LEVEL SECURITY/i);\nassert.match(sql,/Users delete own cancelled reservations/);\nassert.match(js,/\.delete\(\)/);\nassert.match(js,/deleteCancelledReservation/);
 console.log("PASS Stage 3: JavaScript syntax, auth, reservation RPCs, atomic allocation, RLS and ownership checks");
