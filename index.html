@@ -22,6 +22,7 @@
                 <a href="#home" data-i18n="home">Начало</a>
                 <a href="#catalog" data-i18n="catalog">Каталог</a>
                 <a href="librarian.html" data-i18n="librarianNav">Библиотекар</a>
+                <a href="#account" data-i18n="accountTitle">Профил</a>
                 <a href="#myBooks"
                    onclick="showMyBooks()"
                    data-i18n="myBooks">Моите книги</a>
@@ -231,6 +232,22 @@
             </div>
         </section>
 
+        <!-- STAGE 3 — ACCOUNT AND REAL SUPABASE RESERVATIONS -->
+        <section class="soft" id="account">
+          <div class="container">
+            <h2 data-i18n="accountTitle">Профил и резервации</h2>
+            <p data-i18n="accountHelp">Регистрирай се или влез, за да резервираш реални екземпляри от Supabase.</p>
+            <form id="accountForm" class="form-grid stage-three-form">
+              <label><span data-i18n="accountEmail">Имейл</span><input type="email" id="accountEmail" autocomplete="email" required></label>
+              <label><span data-i18n="accountPassword">Парола</span><input type="password" id="accountPassword" minlength="6" autocomplete="current-password" required></label>
+              <button type="submit" id="signInBtn" class="btn" data-i18n="signIn">Вход</button>
+              <button type="button" id="signUpBtn" class="btn btn-outline" data-i18n="signUp">Регистрация</button>
+            </form>
+            <p id="accountStatus" role="status" aria-live="polite"></p>
+            <button type="button" id="signOutBtn" class="btn btn-outline" hidden data-i18n="signOut">Изход</button>
+          </div>
+        </section>
+
         <!-- МОИТЕ РЕЗЕРВАЦИИ -->
         <section id="myBooks">
             <div class="container">
@@ -240,8 +257,7 @@
                 </h2>
 
                 <p data-i18n="demoNote">
-                    Демонстрационни резервации,
-                    запазени само в този браузър.
+                    Реални резервации в Supabase за влезлия потребител.
                 </p>
 
                 <div id="reservationList"></div>
