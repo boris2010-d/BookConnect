@@ -620,24 +620,34 @@ document.addEventListener("keydown", event => {
 });
 
 // ACCOUNT AUTHENTICATION
-document.getElementById("accountForm").addEventListener("submit",async event=>{
-  event.preventDefault();
-  const email=document.getElementById("accountEmail").value.trim();
-  const password=document.getElementById("accountPassword").value;
-  const {error}=await db.auth.signInWithPassword({email,password});
-  document.getElementById("accountPassword").value="";
-  if(error)showNotice(t("authError")+error.message);
-});
-document.getElementById("signUpBtn").addEventListener("click",async ()=>{
+async function submitAccount(mode) {
   const form=document.getElementById("accountForm");
   if(!form.reportValidity())return;
   const email=document.getElementById("accountEmail").value.trim();
   const password=document.getElementById("accountPassword").value;
-  const {data,error}=await db.auth.signUp({email,password});
-  document.getElementById("accountPassword").value="";
-  if(error)showNotice(t("authError")+error.message);
-  else if(!data.session)showNotice(t("confirmEmail"));
+  const login=document.getElementById("signInBtn");
+  const signup=document.getElementById("signUpBtn");
+  login.disabled=true;signup.disabled=true;
+  try {
+    if(mode==="signup") {
+      const {data,error}=await db.auth.signUp({email,password});
+      if(error)throw error;
+      showNotice(data.session ? t("signedInAs")+email : t("confirmEmail"));
+    } else {
+      const {error}=await db.auth.signInWithPassword({email,password});
+      if(error)throw error;
+    }
+  } catch(error) {showNotice(t("authError")+error.message);}
+  finally {
+    document.getElementById("accountPassword").value="";
+    login.disabled=false;signup.disabled=false;
+  }
+}
+document.getElementById("accountForm").addEventListener("submit",event=>{
+  event.preventDefault();
+  submitAccount(selectedAuthMode);
 });
+document.getElementById("signUpBtn").addEventListener("click",()=>submitAccount("signup"));
 document.getElementById("signOutBtn").addEventListener("click",async ()=>{
   const {error}=await db.auth.signOut();
   if(error)showNotice(t("authError")+error.message);
