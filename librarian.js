@@ -1,7 +1,7 @@
 "use strict";
-const URL = "https://hnbyqcohznceoefmzzpl.supabase.co";
+const SUPABASE_URL = "https://hnbyqcohznceoefmzzpl.supabase.co";
 const KEY = "sb_publishable_3uTZGoFy9Stvq711wkTXxg_JytjGLNA";
-const db = window.supabase.createClient(URL, KEY);
+const db = window.supabase.createClient(SUPABASE_URL, KEY);
 const $ = id => document.getElementById(id);
 const strings = {
   bg: {catalog:"Каталог",dashboard:"Панел на библиотекаря",intro:"Данни от Supabase за книги и налични екземпляри.",refresh:"Обнови",genres:"Жанрове",books:"Книги",total:"Всички екземпляри",available:"Налични",inventory:"Каталог и наличности",title:"Заглавие",author:"Автор",genre:"Жанр",staff:"Вход за библиотекар",accessHelp:"Прегледът е публичен, но добавянето на книга е достъпно само за одобрен библиотекар.",email:"Имейл",password:"Парола",login:"Вход",logout:"Изход",add:"Добави книга",titleBg:"Заглавие (BG)",titleEn:"Заглавие (EN)",authorBg:"Автор (BG)",authorEn:"Автор (EN)",save:"Запази книга",writeNote:"Записът е защитен и достъпен само за библиотекар.",loading:"Зареждане...",loaded:"Данните са заредени от Supabase.",error:"Неуспешно зареждане на данните.",noBooks:"Няма намерени книги.",signedOut:"Няма влязъл потребител.",noPermission:"Потребителят няма права на библиотекар.",signedIn:"Влязъл библиотекар.",loginError:"Неуспешен вход: ",saveOk:"Книгата и първият ѝ екземпляр са добавени.",saveError:"Грешка при запис: "},
@@ -103,11 +103,17 @@ $("addBookForm").addEventListener("submit",async event=>{
   $("authStatus").textContent=t("saveOk");
   $("addBookForm").reset();await loadData();
 });
-(async()=>{
-  setLanguage("bg");
-  const {data,error}=await db.auth.getUser();
+// Public inventory must load even when the visitor has no account.
+setLanguage("bg");
+loadData().catch(error=>{
+  console.error("Inventory loading failed:",error);
+  $("dbStatus").textContent=t("error")+" "+error.message;
+});
+db.auth.getUser().then(({data,error})=>{
   sessionUser=error?null:data.user;
   updateAuth();
-  await loadData();
-  db.auth.onAuthStateChange((_event,session)=>{sessionUser=session?.user||null;updateAuth();});
-})();
+}).catch(error=>console.warn("Authentication check:",error));
+db.auth.onAuthStateChange((_event,session)=>{
+  sessionUser=session?.user||null;
+  updateAuth();
+});

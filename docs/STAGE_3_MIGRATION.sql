@@ -65,3 +65,10 @@ end $$;
 revoke all on function public.reserve_book(bigint) from public,anon;
 revoke all on function public.cancel_my_reservation(bigint) from public,anon;
 grant execute on function public.reserve_book(bigint),public.cancel_my_reservation(bigint) to authenticated;
+
+-- Stage 3 full CRUD: only owners can DELETE their previously cancelled rows.
+-- This is a real DELETE, unlike cancellation (UPDATE / soft-delete).
+grant delete on public.reservations to authenticated;
+create policy "Users delete own cancelled reservations" on public.reservations
+for delete to authenticated
+using ((select auth.uid())=user_id and status='cancelled');

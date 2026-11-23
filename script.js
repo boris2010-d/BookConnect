@@ -69,6 +69,10 @@ const translations = {
     demoNote: "Реални резервации в Supabase за влезлия потребител.",
     noReservations: "Все още нямаш резервации.",
     cancel: "Откажи",
+    removeHistory: "Изтрий от историята",
+    removedHistory: "Записът е изтрит от историята.",
+    deleteError: "Изтриването е неуспешно: ",
+    cancelledStatus: "Отказана",
     reserved: "Резервирана",
     alreadyReserved: "Вече си резервирал тази книга.",
     reservationSuccess: "Книгата е резервирана успешно в Supabase.",
@@ -139,6 +143,10 @@ const translations = {
     demoNote: "Real Supabase reservations for the signed-in user.",
     noReservations: "You have no reservations yet.",
     cancel: "Cancel",
+    removeHistory: "Remove from history",
+    removedHistory: "Record removed from history.",
+    deleteError: "Deletion failed: ",
+    cancelledStatus: "Cancelled",
     reserved: "Reserved",
     alreadyReserved: "You have already reserved this book.",
     reservationSuccess: "Book reserved successfully in Supabase.",
@@ -150,6 +158,10 @@ const translations = {
     footerDesc: "School library"
   }
 };
+
+function t(key) {
+  return translations[language]?.[key] || key;
+}
 
 // Source of truth: public.books joined with genres and copies in Supabase.
 const books = [];
@@ -170,7 +182,7 @@ async function loadReservations() {
   if (!currentUser) { reservations = []; renderReservations(); renderBooks(); return; }
   const {data,error} = await db.from("reservations")
     .select("id,book_id,copy_id,status,created_at")
-    .eq("user_id",currentUser.id).eq("status","active").order("created_at",{ascending:false});
+    .eq("user_id",currentUser.id).order("created_at",{ascending:false});
   if (error) { console.error(error); showNotice(t("reservationError")+error.message); return; }
   reservations = data || [];
   renderReservations(); renderBooks();
@@ -426,6 +438,17 @@ async function reserveSelected() {
     showNotice(t("reservationError")+error.message);
   } finally { pendingReservation=false; if(selectedBookId!==null)openBook(selectedBookId); }
 }
+async function deleteCancelledReservation(reservationId) {
+  if (!currentUser) return;
+  const {data,error}=await db.from("reservations").delete()
+    .eq("id",reservationId).eq("status","cancelled").select("id");
+  if (error || !data?.length) {
+    showNotice(t("deleteError")+(error?.message||"Permission denied"));
+    return;
+  }
+  await loadReservations();
+  showNotice(t("removedHistory"));
+}
 async function cancelReservation(reservationId) {
   if (!currentUser) return;
   const {error}=await db.rpc("cancel_my_reservation",{p_reservation_id:reservationId});
@@ -447,11 +470,15 @@ function renderReservations() {
     const title=document.createElement("strong");
     title.textContent=book ? book.title[language] : "#"+reservation.book_id;
     const status=document.createElement("p");
-    status.textContent=t("reserved") + " · #"+reservation.id;
+    const active=reservation.status==="active";
+    status.textContent=t(active?"reserved":"cancelledStatus") + " · #"+reservation.id;
     info.append(title,status);
     const button=document.createElement("button");
-    button.className="btn btn-outline";button.textContent=t("cancel");
-    button.addEventListener("click",()=>cancelReservation(reservation.id));
+    button.className="btn btn-outline";
+    button.textContent=t(active?"cancel":"removeHistory");
+    button.addEventListener("click",()=>active
+      ? cancelReservation(reservation.id)
+      : deleteCancelledReservation(reservation.id));
     row.append(info,button);container.append(row);
   }
 }
