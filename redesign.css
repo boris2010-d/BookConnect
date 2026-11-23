@@ -84,3 +84,11 @@ footer{background:#111c34;color:#e5ecff}
 @media(max-width:850px){.book-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.stats-inner{grid-template-columns:repeat(3,1fr)}.live-stats-label{grid-column:1/-1}.account-intro{grid-template-columns:1fr}.hero{padding:75px 0 100px}}
 @media(max-width:600px){.header-login{font-size:12px;padding:9px}.nav{gap:10px}.hero{padding:65px 0 90px}.hero h1{font-size:42px;letter-spacing:-1.5px}.hero p{font-size:17px}.stats-inner{padding:20px;gap:10px}.live-stat{padding-left:10px}.live-stat strong{font-size:26px}.book-grid{gap:12px}.book-card h3,.book-card .author,.book-card .book-genre,.book-card .available,.book-card .unavailable{margin-left:12px;margin-right:12px}.book-cover{height:220px}.book-card .btn{width:calc(100% - 24px);margin:0 12px 12px}.account-form-card{padding:23px}.account-section{padding:60px 0}}
 @media(max-width:380px){.book-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.stats-inner{grid-template-columns:repeat(2,1fr)}.book-cover{height:170px}}
+
+.book-cover-art{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;position:relative;padding:28px 18px;gap:15px;overflow:hidden;color:#fff;background:radial-gradient(circle at 85% 15%,rgba(255,255,255,.28),transparent 38%),linear-gradient(135deg,var(--cover-a),var(--cover-b));border:12px solid rgba(16,26,55,.1);border-radius:0}
+.book-cover-art::before{content:"";position:absolute;width:200px;height:200px;border:1px solid rgba(255,255,255,.24);border-radius:50%;top:-95px;right:-100px}
+.book-cover-art::after{content:"";position:absolute;width:200px;height:200px;border:1px solid rgba(255,255,255,.2);border-radius:50%;bottom:-155px;left:-100px}
+.book-cover-art .cover-emblem{font-size:28px;opacity:.9}
+.book-cover-art strong{font-size:clamp(16px,1.6vw,24px);line-height:1.22;font-family:Georgia,serif;word-break:break-word;max-width:100%;text-shadow:0 2px 6px rgba(0,0,0,.18)}
+.book-cover-art small{font-size:11px;letter-spacing:1px;text-transform:uppercase;max-width:100%}
+@media(max-width:600px){.book-cover-art{padding:16px 8px;border-width:7px}.book-cover-art strong{font-size:16px}.book-cover-art small{font-size:9px}}
