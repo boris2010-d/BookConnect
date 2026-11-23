@@ -15,6 +15,7 @@ const t = key => strings[lang][key] || key;
 function setLanguage(next) {
   lang = next;
   document.documentElement.lang = next;
+  window.bookConnectTheme?.updateButton?.();
   document.querySelectorAll("[data-i18n]").forEach(el => { el.textContent = t(el.dataset.i18n); });
   $("bgBtn").classList.toggle("active",next === "bg");
   $("enBtn").classList.toggle("active",next === "en");
