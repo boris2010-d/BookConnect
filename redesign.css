@@ -108,3 +108,26 @@ footer{background:#111c34;color:#e5ecff}
 .overview-stat span{color:#6b7892;font-size:12px}
 @media(max-width:850px){.overview-grid{grid-template-columns:repeat(3,1fr)}.overview-intro{grid-column:1/-1}}
 @media(max-width:500px){.overview-grid{gap:10px;padding:18px 15px}.overview-stat{padding-left:9px}.overview-stat strong{font-size:26px}.overview-stat span{font-size:10px}.hero-cta{gap:14px}}
+
+/* Clean top navigation — avoid irregular wrapping at smaller desktop widths */
+.site-header,.nav{overflow:visible}
+.nav{flex-wrap:nowrap;column-gap:24px;min-height:82px}
+.nav nav{flex:1;justify-content:center;gap:clamp(10px,1.4vw,23px);flex-wrap:nowrap}
+.nav nav a{white-space:nowrap;line-height:1.4;font-size:13px}
+.nav-right{flex-shrink:0;gap:8px}
+.nav .logo{flex-shrink:0;font-size:24px}
+.header-login{padding:12px 16px}
+@media (max-width:1050px){
+  .nav{flex-wrap:wrap;justify-content:space-between;padding-top:14px;padding-bottom:14px;row-gap:14px}
+  .nav nav{flex-basis:100%;order:3;justify-content:space-between}
+  .nav-right{order:2}
+}
+@media (max-width:560px){
+  .nav{gap:10px}
+  .nav .logo{font-size:22px}
+  .nav nav{overflow-x:auto;justify-content:flex-start;gap:23px;padding-bottom:6px}
+  .nav nav a{font-size:12px}
+  .header-login{padding:10px 12px}
+  .nav-right{gap:5px}
+  .lang{padding:7px}
+}
