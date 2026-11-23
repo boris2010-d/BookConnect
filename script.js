@@ -287,7 +287,7 @@ function fallbackCover(book) {
   const palette = ["#1c3b61", "#80502e", "#365d4d", "#713b55", "#624a8c", "#945c31"];
   const shade = palette[Math.abs(Number(book.id) || 0) % palette.length];
   const title = String(book.title?.[language] || book.title?.bg || "Book");
-  const words = title.trim().split(/\\s+/);
+  const words = title.trim().split(/\s+/);
   const lines = [];
   let line = "";
   for (const word of words) {
@@ -320,8 +320,9 @@ function setCover(image, book) {
     image.onerror = null;
     image.src = backup;
   };
-  image.src = typeof book.cover === "string" && /^https?:\\/\\//i.test(book.cover.trim())
-    ? book.cover.trim() : backup;
+  const remote = typeof book.cover === "string" &&
+    (book.cover.trim().startsWith("https://") || book.cover.trim().startsWith("http://"));
+  image.src = remote ? book.cover.trim() : backup;
 }
 
 // BOOK CATALOG
