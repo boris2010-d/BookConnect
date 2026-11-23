@@ -203,7 +203,7 @@ function hasReservation(bookId) {
   return reservations.some(item => item.book_id === bookId && item.status === "active");
 }
 async function loadReservations() {
-  if (!currentUser) { reservations = []; renderReservations(); renderBooks();const mine=document.getElementById("liveMyCount");if(mine)mine.textContent="0"; return; }
+  if (!currentUser) { reservations = []; renderReservations(); renderBooks();const mine=document.getElementById("myActiveCount");if(mine)mine.textContent="0"; return; }
   const {data,error} = await db.from("reservations")
     .select("id,book_id,copy_id,status,created_at")
     .eq("user_id",currentUser.id).order("created_at",{ascending:false});
@@ -218,7 +218,8 @@ function updateAccount() {
   document.getElementById("accountStatus").textContent =
     currentUser ? t("signedInAs") + (currentUser.email || currentUser.id) : t("signedOut");
   renderBooks();
-  const mine = document.getElementById("liveMyCount");
+  refreshAccountButton();
+  const mine = document.getElementById("myActiveCount");
   if (mine) mine.textContent=reservations.filter(r=>r.status==="active").length;
 }
 // LANGUAGE SWITCHING
@@ -300,8 +301,8 @@ async function loadBooksFromSupabase() {
 
   renderBooks();
   renderReservations();
-  const b=document.getElementById("liveBookCount");
-  const c=document.getElementById("liveCopyCount");
+  const b=document.getElementById("publicBooksCount");
+  const c=document.getElementById("publicCopiesCount");
   if(b)b.textContent=books.length;
   if(c)c.textContent=books.reduce((n,item)=>n+item.copies,0);
 }
