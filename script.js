@@ -1,10 +1,5 @@
 
-/*
- * BookConnect — Stage 2
- * Catalog, search, filters and BG/EN translations.
- * Reservations are currently a local demo.
- * Book data is loaded from Supabase; reservations are local demo only.
- */
+/* BookConnect — Stage 3: authenticated real Supabase reservations. */
 const SUPABASE_URL = "https://hnbyqcohznceoefmzzpl.supabase.co";
 
 const SUPABASE_KEY = "sb_publishable_3uTZGoFy9Stvq711wkTXxg_JytjGLNA";
@@ -17,6 +12,17 @@ const db = window.supabase.createClient(
 const translations = {
   bg: {
     home: "Начало",
+    accountTitle: "Профил",
+    accountHelp: "Регистрирай се или влез, за да резервираш реални екземпляри от Supabase.",
+    accountEmail: "Имейл", accountPassword: "Парола",
+    signIn: "Вход", signUp: "Регистрация", signOut: "Изход",
+    signedOut: "Влез, за да резервираш книга.",
+    confirmEmail: "Провери имейла си за потвърждение на регистрацията.",
+    signedInAs: "Влязъл потребител: ",
+    authError: "Грешка при вход или регистрация: ",
+    reservationError: "Резервацията не беше извършена: ",
+    cancelError: "Неуспешен отказ: ",
+    reservationLogin: "За резервация първо влез в профила си.",
     catalog: "Каталог",
     librarianNav: "Библиотекар",
     myBooks: "Моите книги",
@@ -60,12 +66,12 @@ const translations = {
     step4: "4. Върни",
     step4Desc: "Върни книгата в определения срок.",
     myReservations: "Моите резервации",
-    demoNote: "Демонстрационни резервации, запазени само в този браузър.",
+    demoNote: "Реални резервации в Supabase за влезлия потребител.",
     noReservations: "Все още нямаш резервации.",
     cancel: "Откажи",
     reserved: "Резервирана",
     alreadyReserved: "Вече си резервирал тази книга.",
-    reservationSuccess: "Книгата е резервирана успешно (демо).",
+    reservationSuccess: "Книгата е резервирана успешно в Supabase.",
     reservationCancelled: "Резервацията е отменена.",
     noCopies: "Няма свободни екземпляри за резервация.",
     aboutTitle: "За нашата библиотека",
@@ -76,6 +82,17 @@ const translations = {
 
   en: {
     home: "Home",
+    accountTitle: "Account",
+    accountHelp: "Sign up or sign in to reserve real copies in Supabase.",
+    accountEmail: "Email", accountPassword: "Password",
+    signIn: "Sign in", signUp: "Sign up", signOut: "Sign out",
+    signedOut: "Sign in to reserve a book.",
+    confirmEmail: "Check your email to confirm registration.",
+    signedInAs: "Signed in as: ",
+    authError: "Sign-in or registration error: ",
+    reservationError: "Could not reserve: ",
+    cancelError: "Could not cancel: ",
+    reservationLogin: "Sign in to reserve a book.",
     catalog: "Catalog",
     librarianNav: "Librarian",
     myBooks: "My books",
@@ -119,12 +136,12 @@ const translations = {
     step4: "4. Return",
     step4Desc: "Return the book before its due date.",
     myReservations: "My reservations",
-    demoNote: "Demo reservations stored only in this browser.",
+    demoNote: "Real Supabase reservations for the signed-in user.",
     noReservations: "You have no reservations yet.",
     cancel: "Cancel",
     reserved: "Reserved",
     alreadyReserved: "You have already reserved this book.",
-    reservationSuccess: "Book reserved successfully (demo).",
+    reservationSuccess: "Book reserved successfully in Supabase.",
     reservationCancelled: "Reservation cancelled.",
     noCopies: "No copies are available for reservation.",
     aboutTitle: "About our library",
@@ -139,48 +156,32 @@ const books = [];
 
 let language = "bg";
 let selectedBookId = null;
-let reservations = [];
-
-try {
-  const saved = JSON.parse(
-    localStorage.getItem("bookconnect_reservations") || "[]"
-  );
-
-  if (Array.isArray(saved)) {
-    reservations = saved.filter(
-      id => Number.isInteger(id)
-    );
-  }
-} catch (error) {
-  reservations = [];
-}
-
-function t(key) {
-  return translations[language][key] || key;
-}
-
-function saveReservations() {
-  try {
-    localStorage.setItem(
-      "bookconnect_reservations",
-      JSON.stringify(reservations)
-    );
-  } catch (error) {
-    showNotice(
-      language === "bg"
-        ? "Браузърът не позволява запазване на резервации."
-        : "Your browser could not save reservations."
-    );
-  }
-}
-
+let reservations = []; // {id, book_id, copy_id, status}
+let currentUser = null;
+let pendingReservation = false;
 function remainingCopies(book) {
-  return Math.max(
-    0,
-    book.copies - (reservations.includes(book.id) ? 1 : 0)
-  );
+  // Supabase copy status is authoritative, not localStorage.
+  return Math.max(0, book.copies);
 }
-
+function hasReservation(bookId) {
+  return reservations.some(item => item.book_id === bookId && item.status === "active");
+}
+async function loadReservations() {
+  if (!currentUser) { reservations = []; renderReservations(); renderBooks(); return; }
+  const {data,error} = await db.from("reservations")
+    .select("id,book_id,copy_id,status,created_at")
+    .eq("user_id",currentUser.id).eq("status","active").order("created_at",{ascending:false});
+  if (error) { console.error(error); showNotice(t("reservationError")+error.message); return; }
+  reservations = data || [];
+  renderReservations(); renderBooks();
+}
+function updateAccount() {
+  document.getElementById("accountForm").hidden = Boolean(currentUser);
+  document.getElementById("signOutBtn").hidden = !currentUser;
+  document.getElementById("accountStatus").textContent =
+    currentUser ? t("signedInAs") + (currentUser.email || currentUser.id) : t("signedOut");
+  renderBooks();
+}
 // LANGUAGE SWITCHING
 
 function setLanguage(lang) {
@@ -203,6 +204,7 @@ function setLanguage(lang) {
 
   renderBooks();
   renderReservations();
+  updateAccount();
 
   if (selectedBookId !== null) {
     openBook(selectedBookId);
@@ -377,10 +379,10 @@ function openBook(id) {
       : t("unavailable");
 
   const button = document.getElementById("reserveBtn");
-  const alreadyReserved = reservations.includes(id);
+  const alreadyReserved = hasReservation(id);
 
   button.textContent = alreadyReserved ? t("reserved") : t("reserve");
-  button.disabled = alreadyReserved || remaining === 0;
+  button.disabled = pendingReservation || alreadyReserved || remaining === 0;
   button.style.opacity = button.disabled ? ".5" : "1";
 
   document.getElementById("bookModal").classList.add("open");
@@ -399,88 +401,62 @@ function closeOnBackdrop(event) {
   }
 }
 
-// DEMO RESERVATIONS
-
-function reserveSelected() {
-  if (selectedBookId === null) return;
-
-  const book = books.find(book => book.id === selectedBookId);
-  if (!book) return;
-
-  if (reservations.includes(book.id)) {
-    showNotice(t("alreadyReserved"));
+// STAGE 3: REAL TRANSACTIONAL RESERVATIONS
+async function reserveSelected() {
+  if (selectedBookId === null || pendingReservation) return;
+  if (!currentUser) {
+    closeModal();
+    document.getElementById("account").scrollIntoView({behavior:"smooth"});
+    showNotice(t("reservationLogin"));
     return;
   }
-
-  if (remainingCopies(book) <= 0) {
-    showNotice(t("noCopies"));
-    return;
-  }
-
-  reservations.push(book.id);
-  saveReservations();
-
-  renderBooks();
-  renderReservations();
-  closeModal();
-
-  showNotice(t("reservationSuccess"));
+  const bookId=selectedBookId;
+  if (hasReservation(bookId)) { showNotice(t("alreadyReserved")); return; }
+  pendingReservation=true;
+  document.getElementById("reserveBtn").disabled=true;
+  try {
+    const {error}=await db.rpc("reserve_book",{p_book_id:bookId});
+    if (error) throw error;
+    closeModal();
+    document.getElementById("myBooks").style.display="block";
+    await Promise.all([loadBooksFromSupabase(),loadReservations()]);
+    showNotice(t("reservationSuccess"));
+  } catch (error) {
+    console.error(error);
+    showNotice(t("reservationError")+error.message);
+  } finally { pendingReservation=false; if(selectedBookId!==null)openBook(selectedBookId); }
 }
-
-function cancelReservation(id) {
-  reservations = reservations.filter(bookId => bookId !== id);
-
-  saveReservations();
-  renderBooks();
-  renderReservations();
-
+async function cancelReservation(reservationId) {
+  if (!currentUser) return;
+  const {error}=await db.rpc("cancel_my_reservation",{p_reservation_id:reservationId});
+  if(error) {console.error(error);showNotice(t("cancelError")+error.message);return;}
+  await Promise.all([loadBooksFromSupabase(),loadReservations()]);
   showNotice(t("reservationCancelled"));
 }
-
 function renderReservations() {
-  const container = document.getElementById("reservationList");
-  container.innerHTML = "";
-
-  if (reservations.length === 0) {
-    const message = document.createElement("p");
-    message.className = "empty";
-    message.textContent = t("noReservations");
-    container.appendChild(message);
-    return;
+  const container=document.getElementById("reservationList");
+  container.replaceChildren();
+  if (!reservations.length) {
+    const p=document.createElement("p");p.className="empty";p.textContent=t("noReservations");
+    container.appendChild(p);return;
   }
-
-  reservations.forEach(id => {
-    const book = books.find(book => book.id === id);
-    if (!book) return;
-
-    const row = document.createElement("div");
-    row.className = "my-item";
-
-    const info = document.createElement("div");
-
-    const title = document.createElement("strong");
-    title.textContent = book.title[language];
-
-    const status = document.createElement("p");
-    status.textContent = t("reserved");
-
-    info.append(title, status);
-
-    const button = document.createElement("button");
-    button.className = "btn btn-outline";
-    button.textContent = t("cancel");
-
-    button.addEventListener("click", () => {
-      cancelReservation(id);
-    });
-
-    row.append(info, button);
-    container.appendChild(row);
-  });
+  for (const reservation of reservations) {
+    const book=books.find(item=>item.id===reservation.book_id);
+    const row=document.createElement("div");row.className="my-item";
+    const info=document.createElement("div");
+    const title=document.createElement("strong");
+    title.textContent=book ? book.title[language] : "#"+reservation.book_id;
+    const status=document.createElement("p");
+    status.textContent=t("reserved") + " · #"+reservation.id;
+    info.append(title,status);
+    const button=document.createElement("button");
+    button.className="btn btn-outline";button.textContent=t("cancel");
+    button.addEventListener("click",()=>cancelReservation(reservation.id));
+    row.append(info,button);container.append(row);
+  }
 }
-
 function showMyBooks() {
-  document.getElementById("myBooks").style.display = "block";
+  document.getElementById("myBooks").style.display="block";
   renderReservations();
 }
 
@@ -525,7 +501,39 @@ document.addEventListener("keydown", event => {
   }
 });
 
-// INITIAL LANGUAGE
-
+// ACCOUNT AUTHENTICATION
+document.getElementById("accountForm").addEventListener("submit",async event=>{
+  event.preventDefault();
+  const email=document.getElementById("accountEmail").value.trim();
+  const password=document.getElementById("accountPassword").value;
+  const {error}=await db.auth.signInWithPassword({email,password});
+  document.getElementById("accountPassword").value="";
+  if(error)showNotice(t("authError")+error.message);
+});
+document.getElementById("signUpBtn").addEventListener("click",async ()=>{
+  const form=document.getElementById("accountForm");
+  if(!form.reportValidity())return;
+  const email=document.getElementById("accountEmail").value.trim();
+  const password=document.getElementById("accountPassword").value;
+  const {data,error}=await db.auth.signUp({email,password});
+  document.getElementById("accountPassword").value="";
+  if(error)showNotice(t("authError")+error.message);
+  else if(!data.session)showNotice(t("confirmEmail"));
+});
+document.getElementById("signOutBtn").addEventListener("click",async ()=>{
+  const {error}=await db.auth.signOut();
+  if(error)showNotice(t("authError")+error.message);
+});
+db.auth.onAuthStateChange((_event,session)=>{
+  currentUser=session?.user||null;
+  updateAccount();
+  // Defer database calls outside the auth callback.
+  setTimeout(()=>{loadReservations();loadBooksFromSupabase();},0);
+});
 setLanguage("bg");
 loadBooksFromSupabase();
+db.auth.getUser().then(({data,error})=>{
+  currentUser=error?null:data.user;
+  updateAccount();
+  loadReservations();
+});
