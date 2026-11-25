@@ -234,11 +234,22 @@ function renderPersonalDetails(book) {
     personalButton(personalText("Изтрий ревю","Delete review"),async()=>{if(await personalLibrary.saveReview(book,null)&&root.contains(comment))renderPersonalDetails(book);}));
   const source = publicBookSource(book);
   if (source) { const link=personalElement("a",personalText("Пълно издание и PDF — Читанка","Full Bulgarian edition and PDF — Chitanka"),"btn btn-outline"); link.href=source;link.target="_blank";link.rel="noopener noreferrer";root.append(link); }
-  const pdfUrl = catalogPdfUrl(book);
-  const reader = personalButton(personalText("Чети онлайн (PDF)","Read online (PDF)"),()=>openCatalogPdf(book,pdfUrl));
-  reader.disabled = !pdfUrl;
-  root.append(reader);
-  if (!pdfUrl) root.append(personalElement("p",personalText("Онлайн изданието все още не е налично.","Online edition is not available yet.")));
+  const reader = personalButton(personalText("Чети онлайн (PDF)","Read online (PDF)"),async()=>{
+    const owner=currentUser?.id;
+    if(!owner)return;
+    reader.disabled=true;
+    try{
+      const {data,error}=await db.from("book_pdfs").select("storage_path").eq("book_id",book.id).maybeSingle();
+      if(error)throw error;
+      if(!data){showNotice(personalText("Няма достъпно PDF издание.","No accessible PDF edition."));return;}
+      const signed=await db.storage.from("book-pdfs").createSignedUrl(data.storage_path,300);
+      if(signed.error)throw signed.error;
+      if(currentUser?.id===owner&&root.contains(reader))openCatalogPdf(book,signed.data.signedUrl);
+    }catch(e){if(currentUser?.id===owner)showNotice(personalText("PDF файлът не може да бъде отворен.","PDF could not be opened."));}
+    finally{reader.disabled=false;}
+  });
+  reader.disabled=!currentUser;
+  root.append(reader,personalElement("p",currentUser?personalText("Достъпът зависи от наличното издание и Premium статуса.","Access depends on edition availability and Premium status."):personalText("Влез в акаунта си за онлайн четене.","Sign in to read online.")));
 }
 function updateSearchSuggestions() {
   const input=document.getElementById("catalogSearch"),list=document.getElementById("catalogSuggestions");if(!input||!list)return;
@@ -246,21 +257,10 @@ function updateSearchSuggestions() {
   for(const b of rankCatalog(books,input.value).slice(0,6)){const o=document.createElement("option");o.value=b.title[language];list.append(o);}
 }
 
- // Add only authorized PDF editions here, keyed by the exact catalog book ID.
-const catalogPdfEditions = Object.freeze({});
-function catalogPdfUrl(book) {
-  const entry = catalogPdfEditions[String(book.id)];
-  if (!entry) return null;
-  const url = typeof entry === "string" ? entry : entry[language];
-  if (typeof url !== "string") return null;
-  try {
-    const parsed = new URL(url, location.href);
-    if (parsed.origin === location.origin && parsed.pathname.startsWith(new URL("pdf/",location.href).pathname) && /\.pdf$/i.test(parsed.pathname)) return parsed.href;
-  } catch {}
-  return null;
-}
+// Signed URLs are issued by Supabase Storage after its access policy checks.
 function openCatalogPdf(book,url) {
-  if (!url || url !== catalogPdfUrl(book)) return;
+  if(!url)return;
+  try{const parsed=new URL(url);if(parsed.protocol!=="https:"||!parsed.pathname.includes("/storage/v1/object/sign/book-pdfs/"))return;}catch{return;}
   const dialog = document.createElement("dialog");
   dialog.style.cssText="width:95vw;height:90vh;max-width:1200px;padding:12px;border:0;border-radius:12px;background:Canvas;color:CanvasText;";
   const header=personalElement("div",undefined,"personal-row");
