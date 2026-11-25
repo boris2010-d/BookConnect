@@ -92,6 +92,8 @@ function renderPersonalDetails(book) {
   root.append(personalElement("h3",personalText("Моята оценка и ревю","My rating and review")),rating,comment,
     personalButton(personalText("Запази ревю","Save review"),()=>{if(personalLibrary.change(v=>v.reviews[id]={rating:Number(rating.value),comment:comment.value.trim()}))showNotice(personalText("Ревюто е запазено локално.","Review saved locally."));}),
     personalButton(personalText("Изтрий ревю","Delete review"),()=>{personalLibrary.change(v=>delete v.reviews[id]);renderPersonalDetails(book);}));
+  const source = publicBookSource(book);
+  if (source) { const link=personalElement("a",personalText("Пълно издание и PDF — Читанка","Full Bulgarian edition and PDF — Chitanka"),"btn btn-outline"); link.href=source;link.target="_blank";link.rel="noopener noreferrer";root.append(link); }
   const pdfUrl = catalogPdfUrl(book);
   const reader = personalButton(personalText("Чети онлайн (PDF)","Read online (PDF)"),()=>openCatalogPdf(book,pdfUrl));
   reader.disabled = !pdfUrl;
@@ -128,4 +130,13 @@ function openCatalogPdf(book,url) {
   const fallback=personalElement("a",personalText("Отвори PDF при проблем с четеца","Open PDF if viewer is unavailable"));fallback.href=url;fallback.target="_blank";fallback.rel="noopener";
   dialog.append(header,fallback,frame);document.body.append(dialog);
   dialog.addEventListener("close",()=>dialog.remove(),{once:true});dialog.showModal();
+}
+
+// Verified public-domain edition landing pages; direct PDF embedding is not verified.
+function publicBookSource(book) {
+  const title = String(book.title?.bg || "").trim().toLocaleLowerCase("bg-BG");
+  const author = String(book.author?.bg || "").trim().toLocaleLowerCase("bg-BG");
+  if (title === "под игото" && author.includes("вазов")) return "https://chitanka.info/book/1773-pod-igoto";
+  if (title === "бай ганьо" && author.includes("константинов")) return "https://chitanka.info/book/1763-baj-ganxo";
+  return null;
 }
