@@ -61,3 +61,14 @@ html:not([data-theme="dark"]) .personal-panel.personal-premium{background:linear
 @media(max-width:650px){.editorial-menu-links{left:0;right:auto}}
 
 @media(min-width:1001px){#how .steps{grid-template-columns:repeat(5,minmax(0,1fr))}}
+
+/* Compact language and account controls */
+.nav-right .editorial-menu summary{display:flex;align-items:center;gap:7px;list-style:none;color:var(--bc-foreground)}
+.nav-right .editorial-menu summary::-webkit-details-marker{display:none}
+.language-menu summary::after{content:"";width:6px;height:6px;border-right:1px solid currentColor;border-bottom:1px solid currentColor;transform:rotate(45deg);margin-top:-3px}
+.language-menu .lang{width:100%;text-align:left;white-space:nowrap;padding:8px 12px}
+.profile-avatar{display:grid;place-items:center;width:36px;height:36px;border-radius:50%;background:#593522;color:#fffaf2;font-family:Georgia,serif;font-size:17px}
+.profile-menu .editorial-menu-links a{color:var(--bc-foreground);text-decoration:none;font-size:13px}
+.profile-menu .editorial-menu-links a:hover{color:var(--bc-link);text-decoration:underline}
+.nav-right .editorial-menu summary:focus-visible{outline:2px solid var(--bc-link);outline-offset:4px;border-radius:4px}
+@media(max-width:650px){.nav-right .editorial-menu-links{left:auto;right:0}}
