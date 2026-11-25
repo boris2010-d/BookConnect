@@ -77,3 +77,16 @@ html:not([data-theme="dark"]) .personal-panel.personal-premium{background:linear
 #catalog .container, .container#catalog {max-width:none;width:100%;box-sizing:border-box;padding-inline:clamp(16px,4vw,64px)}
 #catalog .book-grid{grid-template-columns:repeat(auto-fill,minmax(min(100%,180px),1fr));gap:clamp(16px,2vw,32px)}
 @media(max-width:650px){#catalog .book-grid{grid-template-columns:repeat(auto-fill,minmax(min(100%,140px),1fr))}}
+
+/* Compact navigation on phones; desktop navigation remains unchanged. */
+.mobile-nav-toggle{display:none}
+@media(max-width:650px){
+ header .nav{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px}
+ header .nav .logo{margin-right:auto}
+ .mobile-nav-toggle{display:inline-flex;align-items:center;justify-content:center;min-width:44px;min-height:44px;border:1px solid var(--bc-link);border-radius:10px;background:transparent;color:var(--bc-foreground);font-size:24px;cursor:pointer}
+ .mobile-nav-toggle:focus-visible{outline:2px solid var(--bc-link);outline-offset:3px}
+ #mainNavigation{display:none;order:3;flex-basis:100%;flex-direction:column;align-items:stretch;gap:0;border-top:1px solid var(--bc-link);padding-top:6px}
+ .mobile-nav-toggle[aria-expanded="true"] + #mainNavigation{display:flex}
+ #mainNavigation a{padding:12px 8px;font-size:15px;text-align:left}
+ header .nav-right{order:2;flex-basis:100%;justify-content:flex-start}
+}
