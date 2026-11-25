@@ -389,6 +389,11 @@ function renderBooks() {
     (availability === "all" || remainingCopies(book) > 0)
   ), query);
 
+  if (!query.trim() && genre === "all" && availability === "all") {
+    const featured = ["под игото","бай ганьо","малкият принц","хари потър и философският камък","хобит"];
+    const position = book => { const i = featured.indexOf(String(book.title?.bg || "").trim().toLocaleLowerCase("bg-BG")); return i < 0 ? featured.length : i; };
+    filtered.sort((a,b) => position(a)-position(b));
+  }
   const grid = document.getElementById("bookGrid");
   grid.innerHTML = "";
 
