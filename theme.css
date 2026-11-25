@@ -1,0 +1,116 @@
+/* BookConnect — shared persistent Light / Dark mode */
+:root {
+  --bc-bg: #ffffff;
+  --bc-surface: #ffffff;
+  --bc-control: #ffffff;
+  --bc-foreground: #102344;
+  --bc-muted: #64748b;
+  --bc-border: #dce5f2;
+  --bc-link: #1555b3;
+  --bc-hover: #eef4fc;
+}
+html[data-theme="dark"] {
+  --bc-bg: #0b1220;
+  --bc-surface: #151f31;
+  --bc-control: #1d2b42;
+  --bc-foreground: #e8eefb;
+  --bc-muted: #a9b8d0;
+  --bc-border: #35455e;
+  --bc-link: #9dbdff;
+  --bc-hover: #263954;
+  --blue: #4679ec;
+  --dark: #e8eefb;
+  --light: #17263b;
+  --border: #35455e;
+  --muted: #a9b8d0;
+}
+.theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 9px 12px;
+  font-weight: 700;
+  font-size: 13px;
+  line-height: 1.3;
+  border-radius: 9px;
+  border: 1px solid var(--bc-border);
+  color: var(--bc-foreground);
+  background: var(--bc-surface);
+  white-space: nowrap;
+}
+.theme-toggle:hover { background: var(--bc-hover); }
+.theme-toggle:focus-visible {
+  outline: 3px solid #7aa2f7;
+  outline-offset: 3px;
+}
+html[data-theme="dark"] body {
+  background: var(--bc-bg);
+  color: var(--bc-foreground);
+}
+html[data-theme="dark"] header {
+  background: #111d30;
+  border-color: var(--bc-border);
+}
+html[data-theme="dark"] .logo,
+html[data-theme="dark"] nav a { color: var(--bc-foreground); }
+html[data-theme="dark"] .logo span,
+html[data-theme="dark"] nav a:hover { color: var(--bc-link); }
+html[data-theme="dark"] .lang,
+html[data-theme="dark"] .btn-outline,
+html[data-theme="dark"] .filters input,
+html[data-theme="dark"] .filters select,
+html[data-theme="dark"] .form-grid input,
+html[data-theme="dark"] .form-grid select,
+html[data-theme="dark"] .search-box input {
+  background: var(--bc-control);
+  color: var(--bc-foreground);
+  border-color: var(--bc-border);
+}
+html[data-theme="dark"] input::placeholder { color: #9eb0c9; opacity: 1; }
+html[data-theme="dark"] select option { background: var(--bc-control); color: var(--bc-foreground); }
+html[data-theme="dark"] .lang.active { background: #416ed6; color: #fff; }
+html[data-theme="dark"] .btn:not(.btn-outline) { background: #416ed6; color: #fff; }
+html[data-theme="dark"] .btn:not(.btn-outline):hover { background: #3158b7; }
+html[data-theme="dark"] .btn-outline { color: #b0c8ff; border-color: #668de4; }
+html[data-theme="dark"] .btn-outline:hover { background: #263954; }
+html[data-theme="dark"] .search-box { background: var(--bc-control); }
+html[data-theme="dark"] .soft { background: #101d30; }
+html[data-theme="dark"] .quick-card,
+html[data-theme="dark"] .book-card,
+html[data-theme="dark"] .step,
+html[data-theme="dark"] .panel,
+html[data-theme="dark"] .my-item,
+html[data-theme="dark"] .modal-content {
+  background: var(--bc-surface);
+  color: var(--bc-foreground);
+  border-color: var(--bc-border);
+}
+html[data-theme="dark"] .quick-card:hover { background: #22354e; }
+html[data-theme="dark"] .book-card { box-shadow: 0 6px 22px rgba(0,0,0,.22); }
+html[data-theme="dark"] .book-cover { background: #1d2b42; }
+html[data-theme="dark"] .tag { background: #3b3225; color: #f6d39a; }
+html[data-theme="dark"] .available { color: #7ee4ae; }
+html[data-theme="dark"] .unavailable { color: #ff9696; }
+html[data-theme="dark"] .step-number { background: #263a56; }
+html[data-theme="dark"] .stat-card {
+  background: #182941;
+  border-color: var(--bc-border);
+  color: var(--bc-foreground);
+}
+html[data-theme="dark"] .stat-card strong { color: #a5c3ff; }
+html[data-theme="dark"] .inventory-table th {
+  background: #1d304a;
+  color: var(--bc-foreground);
+}
+html[data-theme="dark"] .inventory-table th,
+html[data-theme="dark"] .inventory-table td { border-bottom-color: var(--bc-border); }
+html[data-theme="dark"] .close { color: var(--bc-foreground); }
+html[data-theme="dark"] .notice { background: #284065; color: #fff; }
+html[data-theme="dark"] footer { background: #070e1a; color: #e8eefb; }
+html[data-theme="dark"] footer p { color: #b0bfd6; }
+html[data-theme="dark"] .hero { background-blend-mode: multiply, normal; }
+@media (max-width: 650px) {
+  .nav-right { flex-wrap: wrap; }
+  .theme-toggle { font-size: 12px; padding: 8px 10px; }
+}

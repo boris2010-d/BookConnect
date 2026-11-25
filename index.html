@@ -6,7 +6,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BookConnect — Училищна библиотека</title>
     <link rel="stylesheet" href="style.css">
-    <script src="script.js" defer></script>
+    <link rel="stylesheet" href="theme.css">
+    <script src="theme.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js" defer></script>
+    <script src="script.js?v=20261123-coverfix" defer></script>
 </head>
 <body>
     <!-- НАВИГАЦИЯ -->
@@ -18,6 +21,8 @@
             <nav>
                 <a href="#home" data-i18n="home">Начало</a>
                 <a href="#catalog" data-i18n="catalog">Каталог</a>
+                <a href="librarian.html" data-i18n="librarianNav">Библиотекар</a>
+                <a href="#account" data-i18n="accountTitle">Профил</a>
                 <a href="#myBooks"
                    onclick="showMyBooks()"
                    data-i18n="myBooks">Моите книги</a>
@@ -25,6 +30,7 @@
                 <a href="#about" data-i18n="aboutNav">За библиотеката</a>
             </nav>
             <div class="nav-right">
+                <button type="button" id="themeToggle" class="theme-toggle" aria-label="Тъмен режим" aria-pressed="false">☾ Тъмен режим</button>
                 <button class="lang active" id="bgBtn"
                         onclick="setLanguage('bg')">BG</button>
                 <button class="lang" id="enBtn"
@@ -36,6 +42,7 @@
         <!-- НАЧАЛНА СЕКЦИЯ -->
         <div class="hero" id="home">
             <div class="container">
+                <div class="hero-eyebrow" data-i18n="heroEyebrow">НОВО · ЕТАП 3 · РЕАЛНИ РЕЗЕРВАЦИИ</div>
                 <h1 data-i18n="welcome">
                     Добре дошъл в BookConnect
                 </h1>
@@ -58,6 +65,7 @@
                         Търси
                     </button>
                 </div>
+                
             </div>
         </div>
         <!-- БЪРЗИ ДЕЙСТВИЯ -->
@@ -102,6 +110,24 @@
                 </a>
             </div>
         </section>
+
+        <!-- STAGE 3 — ACCOUNT AND REAL SUPABASE RESERVATIONS -->
+        <section class="soft account-section" id="account">
+          <div class="container">
+            <h2 data-i18n="accountTitle">Профил и резервации</h2>
+            <p data-i18n="accountHelp">Регистрирай се или влез, за да резервираш реални екземпляри от Supabase.</p>
+            <form id="accountForm" class="form-grid stage-three-form">
+              <label><span data-i18n="accountEmail">Имейл</span><input type="email" id="accountEmail" autocomplete="email" required></label>
+              <label><span data-i18n="accountPassword">Парола</span><input type="password" id="accountPassword" minlength="6" autocomplete="current-password" required></label>
+              <button type="submit" id="signInBtn" class="btn" data-i18n="signIn">Вход</button>
+              <button type="button" id="signUpBtn" class="btn btn-outline" data-i18n="signUp">Регистрация</button>
+            </form>
+            <p id="accountStatus" role="status" aria-live="polite"></p>
+            <button type="button" id="signOutBtn" class="btn btn-outline" hidden data-i18n="signOut">Изход</button>
+          </div>
+        </section>
+
+
         <!-- КАТАЛОГ -->
         <section id="catalog">
             <div class="container">
@@ -110,6 +136,8 @@
                         Книги в каталога
                     </h2>
                 </div>
+
+                <p class="catalog-lead" data-i18n="catalogLead">Избери книга и я резервирай онлайн — наличността се актуализира директно от базата данни.</p>
                 <div class="filters">
                     <input
                         id="catalogSearch"
@@ -143,6 +171,8 @@
                         </option>
                     </select>
                 </div>
+
+                <div class="catalog-toolbar"><span id="resultSummary" role="status" aria-live="polite"></span><a href="#account" data-i18n="catalogAccountLink">Резервирай с профил →</a></div>
                 <!-- КНИГИТЕ СЕ ЗАРЕЖДАТ ОТ JAVASCRIPT -->
                 <div class="book-grid" id="bookGrid"></div>
                 <p class="empty"
@@ -201,14 +231,14 @@
             </div>
         </section>
         <!-- МОИТЕ РЕЗЕРВАЦИИ -->
-        <section id="myBooks">
+        <section id="myBooks" class="reservations-section">
             <div class="container">
-                <h2 data-i18n="myReservations">
+
+                <span class="section-kicker" data-i18n="myBooksKicker">МОЯТА БИБЛИОТЕКА</span>\n                <h2 data-i18n="myReservations">
                     Моите резервации
                 </h2>
                 <p data-i18n="demoNote">
-                    Демонстрационни резервации,
-                    запазени само в този браузър.
+                    Реални резервации в Supabase за влезлия потребител.
                 </p>
                 <div id="reservationList"></div>
             </div>

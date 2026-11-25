@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="bg">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>BookConnect — Панел на библиотекаря</title>
+  <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="theme.css">
+    <script src="theme.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js" defer></script>
+  <script src="librarian.js" defer></script>
+</head>
+<body>
+<header><div class="container nav">
+  <a class="logo" href="index.html">📖 Book<span>Connect</span></a>
+  <nav aria-label="Navigation">
+    <a href="index.html" data-i18n="catalog">Каталог</a>
+    <a href="librarian.html" aria-current="page" data-i18n="dashboard">Панел на библиотекаря</a>
+  </nav>
+  <div class="nav-right">
+    <button type="button" id="themeToggle" class="theme-toggle" aria-label="Тъмен режим" aria-pressed="false">☾ Тъмен режим</button>
+    <button class="lang active" id="bgBtn" type="button">BG</button>
+    <button class="lang" id="enBtn" type="button">EN</button>
+  </div>
+</div></header>
+<main class="container stage-two">
+  <div class="section-title">
+    <div><h1 data-i18n="dashboard">Панел на библиотекаря</h1>
+      <p data-i18n="intro">Данни от Supabase за книги и налични екземпляри.</p></div>
+    <button class="btn btn-outline" id="refreshBtn" type="button" data-i18n="refresh">Обнови</button>
+  </div>
+  <p id="dbStatus" role="status" aria-live="polite"></p>
+  <section class="stats-grid" aria-label="Library statistics">
+    <article class="stat-card"><span data-i18n="genres">Жанрове</span><strong id="genreCount">—</strong></article>
+    <article class="stat-card"><span data-i18n="books">Книги</span><strong id="bookCount">—</strong></article>
+    <article class="stat-card"><span data-i18n="total">Всички екземпляри</span><strong id="totalCount">—</strong></article>
+    <article class="stat-card"><span data-i18n="available">Налични</span><strong id="availableCount">—</strong></article>
+  </section>
+  <section class="panel" aria-labelledby="inventoryTitle">
+    <h2 id="inventoryTitle" data-i18n="inventory">Каталог и наличности</h2>
+    <div class="table-scroll"><table class="inventory-table">
+      <thead><tr>
+        <th scope="col" data-i18n="title">Заглавие</th>
+        <th scope="col" data-i18n="author">Автор</th>
+        <th scope="col" data-i18n="genre">Жанр</th>
+        <th scope="col" data-i18n="total">Всички екземпляри</th>
+        <th scope="col" data-i18n="available">Налични</th>
+      </tr></thead><tbody id="inventoryRows"></tbody>
+    </table></div>
+  </section>
+  <section class="panel" aria-labelledby="accessTitle">
+    <h2 id="accessTitle" data-i18n="staff">Вход за библиотекар</h2>
+    <p data-i18n="accessHelp">Прегледът е публичен, но добавянето на книга е достъпно само за одобрен библиотекар.</p>
+    <form id="loginForm" class="form-grid">
+      <label><span data-i18n="email">Имейл</span><input id="email" type="email" autocomplete="username" required></label>
+      <label><span data-i18n="password">Парола</span><input id="password" type="password" autocomplete="current-password" required></label>
+      <button id="loginBtn" class="btn" type="submit" data-i18n="login">Вход</button>
+    </form>
+    <p id="authStatus" role="status"></p>
+    <button id="logoutBtn" class="btn btn-outline" type="button" hidden data-i18n="logout">Изход</button>
+  </section>
+  <section class="panel" id="addPanel" aria-labelledby="addTitle" hidden>
+    <h2 id="addTitle" data-i18n="add">Добави книга</h2>
+    <form id="addBookForm" class="form-grid">
+      <label><span data-i18n="titleBg">Заглавие (BG)</span><input id="titleBg" maxlength="200" required></label>
+      <label><span data-i18n="titleEn">Заглавие (EN)</span><input id="titleEn" maxlength="200" required></label>
+      <label><span data-i18n="authorBg">Автор (BG)</span><input id="authorBg" maxlength="200" required></label>
+      <label><span data-i18n="authorEn">Автор (EN)</span><input id="authorEn" maxlength="200" required></label>
+      <label><span data-i18n="genre">Жанр</span><select id="addGenre" required></select></label>
+      <label><span data-i18n="inventory">Инвентарен номер</span><input id="inventoryNumber" maxlength="60" required></label>
+      <button class="btn" type="submit" id="saveBtn" data-i18n="save">Запази книга</button>
+    </form>
+    <p data-i18n="writeNote">Записът се извършва чрез защитена функция в Supabase след прилагане на SQL миграцията.</p>
+  </section>
+</main>
+<footer><div class="container footer-inner"><strong>📖 BookConnect</strong><p>© 2026 BookConnect</p></div></footer>
+</body></html>
