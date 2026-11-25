@@ -1,0 +1,43 @@
+/* BookConnect editorial edition */
+html:not([data-theme="dark"]) {
+ --blue:#593522;--dark:#211914;--light:#eee6d9;--border:#d9c9b5;--muted:#746b60;
+ --bc-bg:#f7f2e9;--bc-surface:#f7f2e9;--bc-control:#fffaf2;--bc-foreground:#211914;--bc-muted:#746b60;--bc-border:#d9c9b5;--bc-link:#593522;--bc-hover:#eee6d9;
+}
+body{background:var(--bc-bg);color:var(--bc-foreground);font-family:Arial,sans-serif}
+.container{max-width:1400px;padding-inline:clamp(20px,5vw,76px)}
+header{background:var(--bc-bg)}
+.nav{gap:16px;min-height:70px}
+.logo,h1,h2,h3{font-family:Georgia,"Times New Roman",serif;font-weight:500}
+.logo{font-size:30px;letter-spacing:-1px}.logo span{color:inherit}
+nav{gap:15px}nav a{font-size:13px}
+.btn,.lang,.theme-toggle{border-radius:999px}
+html:not([data-theme="dark"]) .btn:not(.btn-outline):hover{background:#402416}
+html:not([data-theme="dark"]) .btn-outline{background:transparent;color:var(--blue)}
+.hero{background:none;color:inherit;padding:32px 0 40px}
+.editorial-hero{display:grid;grid-template-columns: .85fr 1.25fr;align-items:center;gap:clamp(24px,5vw,80px)}
+.editorial-photo{min-height:390px;aspect-ratio:1.8;background:url("https://images.unsplash.com/photo-1507842217343-583bb7270b66?w=1400&fit=crop") center/cover;border-radius:8px}
+.hero h1{font-size:clamp(40px,5.2vw,78px);line-height:1.02;letter-spacing:-2px;font-weight:400}
+.hero p{font-family:Georgia,serif;color:var(--bc-muted);font-size:21px;line-height:1.4}
+.hero-eyebrow{padding:0;border:0;letter-spacing:2.5px;color:var(--bc-link);font-size:11px}
+.hero .search-box{border:1px solid var(--border);background:var(--bc-control);margin-top:16px}
+.hero .search-box input{background:transparent;color:inherit}
+.hero-cta{gap:12px;margin-top:16px}
+section{padding:36px 0}
+#catalog .section-title{margin-bottom:12px}
+h2{font-size:clamp(26px,3vw,42px)}
+.book-grid{grid-template-columns:repeat(5,minmax(0,1fr));gap:clamp(12px,3vw,40px)}
+.book-card{border:0;background:transparent;box-shadow:none;padding:0;gap:7px}
+.book-card .book-cover{width:100%;height:auto;aspect-ratio:2/3;object-fit:cover;border-radius:6px;box-shadow:2px 5px 12px #21191420}
+.book-card h3{margin:5px 0 0;font-size:18px}
+.book-card .author{font-family:Georgia,serif;font-style:italic}
+.book-card .btn{font-size:12px;padding:9px 10px}
+.book-card > button[aria-pressed]{top:8px;right:8px;width:32px;height:32px;color:#593522;background:#fffaf2;border-color:#e2d3c0}
+.book-card > button[aria-pressed=true]{color:#a23d42}
+.quick-card{background:transparent;border-top:1px solid var(--border);border-radius:0;text-align:left;padding:20px 0}
+.quick-card .symbol{font-size:26px}
+.personal-panel{background:var(--bc-surface)}
+html:not([data-theme="dark"]) .soft{background:#eee6d9}
+html:not([data-theme="dark"]) footer{background:#39261d;color:#f7f2e9}
+html:not([data-theme="dark"]) .filters input,html:not([data-theme="dark"]) .filters select{background:#fffaf2}
+@media(max-width:1000px){.book-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.editorial-photo{min-height:280px}}
+@media(max-width:650px){.editorial-hero{grid-template-columns:1fr}.editorial-photo{min-height:0;aspect-ratio:1.6}.book-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.hero h1{letter-spacing:-1px}.nav{padding-block:12px}.hero{padding-top:24px}}
