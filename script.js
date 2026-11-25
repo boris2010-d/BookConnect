@@ -331,26 +331,40 @@ function setCover(image, book) {
 
 // BOOK CATALOG
 
-function renderBooks() {
-  const query = document.getElementById("catalogSearch")
-    .value.trim().toLocaleLowerCase();
+function normalizeSearch(value) {
+  return String(value ?? "").normalize("NFC").toLocaleLowerCase("bg-BG").trim().replace(/\s+/g," ");
+}
 
+function rankCatalog(items, query) {
+  const q = normalizeSearch(query);
+  if (!q) return items;
+  const terms = q.split(" ");
+  return items.map((book, index) => {
+    const titles = [book.title.bg, book.title.en].map(normalizeSearch);
+    const authors = [book.author.bg, book.author.en].map(normalizeSearch);
+    const genres = [translations.bg[book.genre], translations.en[book.genre]].map(normalizeSearch);
+    let score = titles.includes(q) ? 100 : 0;
+    for (const term of terms) {
+      if (titles.some(v => v.startsWith(term))) score += 50;
+      else if (titles.some(v => v.includes(term))) score += 30;
+      else if (authors.some(v => v.includes(term))) score += 20;
+      else if (genres.some(v => v.includes(term))) score += 10;
+      else return {book, index, score: -1};
+    }
+    return {book, index, score};
+  }).filter(item => item.score >= 0)
+    .sort((a,b) => b.score-a.score || Number(remainingCopies(b.book)>0)-Number(remainingCopies(a.book)>0) || a.index-b.index)
+    .map(item => item.book);
+}
+
+function renderBooks() {
+  const query = document.getElementById("catalogSearch").value;
   const genre = document.getElementById("genreFilter").value;
   const availability = document.getElementById("availabilityFilter").value;
-
-  const filtered = books.filter(book => {
-    const searchableText = [
-      book.title.bg,
-      book.title.en,
-      book.author.bg,
-      book.author.en,
-      t(book.genre)
-    ].join(" ").toLocaleLowerCase();
-
-    return searchableText.includes(query)
-      && (genre === "all" || book.genre === genre)
-      && (availability === "all" || remainingCopies(book) > 0);
-  });
+  const filtered = rankCatalog(books.filter(book =>
+    (genre === "all" || book.genre === genre) &&
+    (availability === "all" || remainingCopies(book) > 0)
+  ), query);
 
   const grid = document.getElementById("bookGrid");
   grid.innerHTML = "";
