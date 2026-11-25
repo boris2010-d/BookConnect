@@ -312,17 +312,37 @@ function fallbackCover(book) {
     '<text x="150" y="' + (210 - (maxLines.length - 1) * lineHeight / 2 + i * lineHeight) +
     '" font-size="' + fontSize + '" font-family="Arial,sans-serif" font-weight="bold" text-anchor="middle" fill="#ffffff">' +
     escapeXml(value) + '</text>').join("");
+  const motifs = [
+    '<path d="M45 140L110 65L165 140L210 90L255 140Z" fill="#ffffff" opacity=".35"/><circle cx="215" cy="65" r="23" fill="#f4d49a"/>',
+    '<path d="M150 45L164 80L202 83L173 107L182 145L150 124L118 145L127 107L98 83L136 80Z" fill="#f4d49a"/>',
+    '<path d="M150 145V55M150 100Q70 100 75 50Q145 45 150 100M150 120Q230 120 225 70Q155 65 150 120" stroke="#f4d49a" stroke-width="5" fill="none"/>',
+    '<circle cx="150" cy="95" r="48" fill="none" stroke="#f4d49a" stroke-width="3"/><path d="M150 48L165 95L150 142L135 95Z" fill="#f4d49a"/>'
+  ];
+  const hash = Array.from(title).reduce((n,c)=>(n+c.codePointAt(0))%4,0);
   const svg = '<svg xmlns="http://www.w3.org/2000/svg" width="300" height="420" viewBox="0 0 300 420">' +
     '<rect width="300" height="420" rx="12" fill="' + shade + '"/>' +
     '<rect x="22" y="22" width="256" height="376" rx="5" fill="none" stroke="#ffffff" stroke-opacity=".35" stroke-width="2"/>' +
-    text + '<text x="150" y="364" font-family="Arial,sans-serif" font-size="14" letter-spacing="2" text-anchor="middle" fill="#f0e6d7">BOOKCONNECT</text></svg>';
+    motifs[hash] + text + '<text x="150" y="364" font-family="Arial,sans-serif" font-size="14" letter-spacing="2" text-anchor="middle" fill="#f0e6d7">BOOKCONNECT</text></svg>';
   return "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
 }
 
 function setCover(image, book) {
-  // Generated covers use the same localized title as the catalog and details.
-  image.onerror = null;
-  image.src = fallbackCover(book);
+  const fallback = fallbackCover(book);
+  const known = [
+    [/^the hobbit$/i, "9780547928227"],
+    [/^the little prince$/i, "9780156012195"],
+    [/^harry potter and the philosopher.s stone$/i, "9780747532699"],
+    [/^harry potter and the sorcerer.s stone$/i, "9780590353427"]
+  ];
+  const match = known.find(([pattern]) => pattern.test(String(book.title?.en || "").trim()));
+  let source = null;
+  try {
+    const url = new URL(book.cover || "", location.href);
+    if (book.cover && url.protocol === "https:" && !/placeholder|placehold\.co|dummyimage|picsum/i.test(url.hostname)) source = url.href;
+  } catch {}
+  if (!source && match && language === "en") source = "https://covers.openlibrary.org/b/isbn/" + match[1] + "-L.jpg?default=false";
+  image.onerror = () => { image.onerror = null; image.src = fallback; };
+  image.src = source || fallback;
 }
 
 // BOOK CATALOG
