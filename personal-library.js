@@ -1,4 +1,4 @@
-// Local-only personal library. No database writes or payment processing.
+// Personal library: Supabase favorites and history; remaining features local.
 const personalLibrary = (() => {
   const key = () => "bookconnect.personal.v1." + (currentUser?.id || "guest");
   const fresh = () => ({favorites:[],recent:[],reviews:{},goals:{},finished:{},premiumUntil:0});
@@ -22,6 +22,7 @@ const personalLibrary = (() => {
   const id=b=>String(b.id);
   let remoteFavorites = null, remoteOwner = null, pending = false;
   async function syncFavorites() {
+    void syncHistory();
     const owner=currentUser?.id;
     if (!owner) { remoteOwner=null; remoteFavorites=null; return; }
     if(remoteOwner!==owner){remoteOwner=owner;remoteFavorites=null;}
@@ -47,8 +48,28 @@ const personalLibrary = (() => {
     } catch(e){showNotice(personalText("Любимата книга не е запазена.","Favorite could not be saved."));return false;}
     finally{pending=false;}
   }
-  function view(){const s=read();if(currentUser)s.favorites=remoteOwner===currentUser.id?(remoteFavorites||[]):[];return s;}
-  function visit(b) { return change(s=>{s.recent=[id(b),...s.recent.filter(x=>x!==id(b))].slice(0,10);}); }
+  function view(){const s=read();if(currentUser){s.favorites=remoteOwner===currentUser.id?(remoteFavorites||[]):[];s.recent=historyOwner===currentUser.id?remoteRecent:[];}return s;}
+  let historyOwner=null, remoteRecent=[], historyVersion=0;
+  async function syncHistory(){
+    const owner=currentUser?.id;
+    if(historyOwner!==owner){historyOwner=owner;remoteRecent=[];}
+    const version=++historyVersion;
+    if(!owner)return;
+    try {
+      const {data,error}=await db.from("reading_history").select("book_id").eq("user_id",owner).order("last_opened_at",{ascending:false}).limit(10);
+      if(error)throw error;
+      if(currentUser?.id===owner&&version===historyVersion){remoteRecent=data.map(r=>String(r.book_id));renderPersonalLibrary();}
+    }catch(e){if(currentUser?.id===owner)showNotice(personalText("Историята не е заредена.","History could not be loaded."));}
+  }
+  async function visit(b) {
+    if(!currentUser)return change(s=>{s.recent=[id(b),...s.recent.filter(x=>x!==id(b))].slice(0,10);});
+    const owner=currentUser.id;
+    try{
+      const {error}=await db.from("reading_history").upsert({user_id:owner,book_id:id(b),last_opened_at:new Date().toISOString()},{onConflict:"user_id,book_id"});
+      if(error)throw error;
+      if(currentUser?.id===owner)await syncHistory();
+    }catch(e){if(currentUser?.id===owner)showNotice(personalText("Историята не е запазена.","History could not be saved."));}
+  }
   function recommendations(items) {
     const s=view(), weights=new Map();
     for(const b of items) {
@@ -81,7 +102,7 @@ function renderPersonalLibrary() {
   const root=document.getElementById("personalLibrary");if(!root)return;
   const s=personalLibrary.read(),year=String(new Date().getFullYear());
   root.replaceChildren(personalElement("h2",personalText("Моята библиотека","My personal library")),
-    personalElement("p",personalText("Любимите книги се синхронизират при вход. Другите лични данни са локални.","Favorites sync when signed in. Other personal data is local.")));
+    personalElement("p",personalText("Любимите книги и историята се синхронизират при вход. Другите лични данни са локални.","Favorites and history sync when signed in. Other personal data is local.")));
   const tabs=personalElement("div",undefined,"personal-tabs");
   const choices=[["favorites",personalText("♥ Любими","♥ Favorites")],["recent",personalText("История","History")],["recommended",personalText("Препоръки","Recommendations")],["challenge",personalText("Предизвикателство","Challenge")],["premium","Premium"]];
   for(const [key,label] of choices){const b=personalButton(label,()=>{personalTab=key;renderPersonalLibrary();document.querySelector("#personalLibrary [aria-pressed=true]")?.focus();});b.setAttribute("aria-pressed",String(key===personalTab));tabs.append(b);}
