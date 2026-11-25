@@ -202,6 +202,14 @@ async function loadReservations() {
   renderReservations(); renderBooks();
 }
 function updateAccount() {
+  const avatar = document.getElementById("profileAvatar");
+  if (avatar) {
+    if (!avatar.dataset.guestIcon) avatar.dataset.guestIcon = avatar.innerHTML;
+    if (currentUser) {
+      const name = String(currentUser.user_metadata?.full_name || currentUser.email || "U").trim();
+      avatar.textContent = Array.from(name)[0]?.toUpperCase() || "U";
+    } else avatar.innerHTML = avatar.dataset.guestIcon;
+  }
   document.getElementById("accountForm").hidden = Boolean(currentUser);
   document.getElementById("signOutBtn").hidden = !currentUser;
   document.getElementById("accountStatus").textContent =
@@ -215,6 +223,8 @@ function setLanguage(lang) {
   lang = language;
   try { localStorage.setItem("bookconnect.language", lang); } catch (_) { /* Storage may be disabled. */ }
   document.documentElement.lang = lang;
+  const currentLanguage = document.getElementById("currentLanguage");
+  if (currentLanguage) currentLanguage.textContent = lang.toUpperCase();
   window.bookConnectTheme?.updateButton?.();
 
   document.querySelectorAll("[data-i18n]").forEach(element => {
