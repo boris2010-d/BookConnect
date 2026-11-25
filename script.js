@@ -344,7 +344,12 @@ function setCover(image, book) {
   } catch {}
   if (!source && match && language === "en") source = "https://covers.openlibrary.org/b/isbn/" + match[1] + "-L.jpg?default=false";
   image.onerror = () => { image.onerror = null; image.src = fallback; };
-  image.src = source || fallback;
+  const title = String(book.title?.bg || "").trim().toLocaleLowerCase("bg-BG");
+  const artwork = {"под игото":"pod-igoto","бай ганьо":"bay-ganyo","малкият принц":"little-prince","хари потър и философският камък":"harry-potter","хобит":"hobbit"};
+  if (language === "bg" && Object.hasOwn(artwork,title)) {
+    image.onerror = () => { image.onerror = () => { image.onerror=null; image.src=fallback; }; image.src=source||fallback; };
+    image.src="assets/editorial/"+artwork[title]+".jpg";
+  } else image.src = source || fallback;
 }
 
 // BOOK CATALOG
