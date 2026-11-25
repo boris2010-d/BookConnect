@@ -41,3 +41,7 @@ html:not([data-theme="dark"]) footer{background:#39261d;color:#f7f2e9}
 html:not([data-theme="dark"]) .filters input,html:not([data-theme="dark"]) .filters select{background:#fffaf2}
 @media(max-width:1000px){.book-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.editorial-photo{min-height:280px}}
 @media(max-width:650px){.editorial-hero{grid-template-columns:1fr}.editorial-photo{min-height:0;aspect-ratio:1.6}.book-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.hero h1{letter-spacing:-1px}.nav{padding-block:12px}.hero{padding-top:24px}}
+
+/* Approved mockup proportions and local hero photograph */
+.editorial-photo{background-image:url("assets/editorial/library.jpg"),url("https://images.unsplash.com/photo-1507842217343-583bb7270b66?w=1400&fit=crop");min-height:0;aspect-ratio:2.2}
+@media(min-width:1001px){.editorial-hero{grid-template-columns: .78fr 1.22fr;gap:7vw}.hero{padding:28px 0 20px}.hero h1{font-size:clamp(48px,4.8vw,74px)}.book-grid{gap:clamp(24px,4.5vw,70px)}.book-card .book-cover{aspect-ratio: .78}}
