@@ -20,11 +20,37 @@ const personalLibrary = (() => {
     catch { showNotice(language==="bg"?"Локалното запазване е недостъпно.":"Local storage is unavailable."); return false; }
   }
   const id=b=>String(b.id);
-  const favorite=b=>read().favorites.includes(id(b));
-  function toggle(b) { return change(s=>{s.favorites=s.favorites.includes(id(b))?s.favorites.filter(x=>x!==id(b)):[...s.favorites,id(b)];}); }
+  let remoteFavorites = null, remoteOwner = null, pending = false;
+  async function syncFavorites() {
+    const owner=currentUser?.id;
+    if (!owner) { remoteOwner=null; remoteFavorites=null; return; }
+    if(remoteOwner!==owner){remoteOwner=owner;remoteFavorites=null;}
+    if(pending)return;
+    const {data,error}=await db.from('favorites').select('book_id').eq('user_id',owner);
+    if(currentUser?.id!==owner||pending)return;
+    if(error){showNotice(personalText('Любимите книги не са заредени.','Favorites could not be loaded.'));return;}
+    remoteFavorites=data.map(r=>String(r.book_id));renderBooks();
+  }
+  const favorite=b=>currentUser ? remoteOwner===currentUser.id && (remoteFavorites||[]).includes(id(b)) : read().favorites.includes(id(b));
+  async function toggle(b) {
+    if(!currentUser)return change(s=>{s.favorites=s.favorites.includes(id(b))?s.favorites.filter(x=>x!==id(b)):[...s.favorites,id(b)];});
+    const owner=currentUser.id;
+    if(pending||remoteOwner!==owner||!remoteFavorites)return false;
+    pending=true;
+    try {
+      const active=remoteFavorites.includes(id(b));
+      const {error}=await (active?db.from("favorites").delete().eq("user_id",owner).eq("book_id",id(b)):db.from("favorites").insert({user_id:owner,book_id:id(b)}));
+      if(error)throw error;
+      if(currentUser?.id!==owner)return false;
+      remoteFavorites=active?remoteFavorites.filter(x=>x!==id(b)):[...remoteFavorites,id(b)];
+      return true;
+    } catch(e){showNotice(personalText("Любимата книга не е запазена.","Favorite could not be saved."));return false;}
+    finally{pending=false;}
+  }
+  function view(){const s=read();if(currentUser)s.favorites=remoteOwner===currentUser.id?(remoteFavorites||[]):[];return s;}
   function visit(b) { return change(s=>{s.recent=[id(b),...s.recent.filter(x=>x!==id(b))].slice(0,10);}); }
   function recommendations(items) {
-    const s=read(), weights=new Map();
+    const s=view(), weights=new Map();
     for(const b of items) {
       const weight=(s.favorites.includes(id(b))?3:0)+(s.recent.includes(id(b))?1:0);
       if(weight) weights.set(b.genre,(weights.get(b.genre)||0)+weight);
@@ -33,7 +59,7 @@ const personalLibrary = (() => {
       .map((b,i)=>({b,i,score:weights.get(b.genre)||0}))
       .sort((a,b)=>b.score-a.score||a.i-b.i).slice(0,4).map(x=>x.b);
   }
-  return {read,change,id,favorite,toggle,visit,recommendations};
+  return {read:view,change,id,favorite,toggle,visit,recommendations,syncFavorites};
 })();
 
 const personalText=(bg,en)=>language==="bg"?bg:en;
@@ -45,7 +71,7 @@ function personalButton(text,fn) {
 }
 function favoriteButton(book) {
   const active=personalLibrary.favorite(book);
-  const b=personalButton(active?"♥":"♡",()=>{if(personalLibrary.toggle(book))renderBooks();});
+  const b=personalButton(active?"♥":"♡",async()=>{if(await personalLibrary.toggle(book))renderBooks();});
   b.setAttribute("aria-pressed",String(active));
   b.setAttribute("aria-label",personalText("Любима книга","Favorite book")+": "+book.title[language]);
   return b;
@@ -55,7 +81,7 @@ function renderPersonalLibrary() {
   const root=document.getElementById("personalLibrary");if(!root)return;
   const s=personalLibrary.read(),year=String(new Date().getFullYear());
   root.replaceChildren(personalElement("h2",personalText("Моята библиотека","My personal library")),
-    personalElement("p",personalText("Данните са само в този браузър.","Data is stored only in this browser.")));
+    personalElement("p",personalText("Любимите книги се синхронизират при вход. Другите лични данни са локални.","Favorites sync when signed in. Other personal data is local.")));
   const tabs=personalElement("div",undefined,"personal-tabs");
   const choices=[["favorites",personalText("♥ Любими","♥ Favorites")],["recent",personalText("История","History")],["recommended",personalText("Препоръки","Recommendations")],["challenge",personalText("Предизвикателство","Challenge")],["premium","Premium"]];
   for(const [key,label] of choices){const b=personalButton(label,()=>{personalTab=key;renderPersonalLibrary();document.querySelector("#personalLibrary [aria-pressed=true]")?.focus();});b.setAttribute("aria-pressed",String(key===personalTab));tabs.append(b);}
