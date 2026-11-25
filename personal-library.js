@@ -83,9 +83,9 @@ function renderPersonalLibrary() {
   const active=s.premiumUntil>Date.now();
   panel.classList.add("personal-premium");
   panel.append(personalElement("h3","BookConnect Premium — €27 / "+personalText("година","year")),
-    personalElement("p",personalText("Демо абонамент, без плащане или отключване на лицензирани книги.","Demo subscription, no payment or licensed content unlocked.")),
+    personalElement("p",personalText("Безплатно демо за 1 месец. Без автоматично плащане или отключване на лицензирани книги.","Free one-month demo. No automatic payment or licensed content unlocked.")),
     personalElement("p",active?personalText("Демо активен до ","Demo active until ")+new Date(s.premiumUntil).toLocaleDateString(language):personalText("Неактивен","Inactive")),
-    personalButton(active?personalText("Прекрати демото","End demo"):personalText("Активирай демо","Activate demo"),()=>{personalLibrary.change(v=>{const d=new Date();d.setFullYear(d.getFullYear()+1);v.premiumUntil=active?0:d.getTime();});renderPersonalLibrary();}));
+    personalButton(active?personalText("Прекрати демото","End demo"):personalText("Активирай 1 месец безплатно","Activate one free month"),()=>{personalLibrary.change(v=>{const d=new Date();const day=d.getDate();d.setDate(1);d.setMonth(d.getMonth()+1);const last=new Date(d.getFullYear(),d.getMonth()+1,0).getDate();d.setDate(Math.min(day,last));v.premiumUntil=active?0:d.getTime();});renderPersonalLibrary();}));
   }
 }
 function renderPersonalDetails(book) {
