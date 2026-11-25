@@ -205,7 +205,9 @@ function updateAccount() {
 // LANGUAGE SWITCHING
 
 function setLanguage(lang) {
-  language = lang;
+  language = lang === "en" ? "en" : "bg";
+  lang = language;
+  try { localStorage.setItem("bookconnect.language", lang); } catch (_) { /* Storage may be disabled. */ }
   document.documentElement.lang = lang;
   window.bookConnectTheme?.updateButton?.();
 
@@ -620,7 +622,9 @@ db.auth.onAuthStateChange((_event,session)=>{
   // Defer database calls outside the auth callback.
   setTimeout(()=>{loadReservations();loadBooksFromSupabase();},0);
 });
-setLanguage("bg");
+let savedLanguage = "bg";
+try { savedLanguage = localStorage.getItem("bookconnect.language") === "en" ? "en" : "bg"; } catch (_) { /* Use default. */ }
+setLanguage(savedLanguage);
 loadBooksFromSupabase();
 db.auth.getUser().then(({data,error})=>{
   currentUser=error?null:data.user;
