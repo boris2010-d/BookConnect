@@ -12,14 +12,12 @@
     <script src="script.js?v=20261123-coverfix" defer></script>
 </head>
 <body>
-
     <!-- НАВИГАЦИЯ -->
     <header>
         <div class="container nav">
             <a class="logo" href="#home">
                 📖 Book<span>Connect</span>
             </a>
-
             <nav>
                 <a href="#home" data-i18n="home">Начало</a>
                 <a href="#catalog" data-i18n="catalog">Каталог</a>
@@ -31,7 +29,6 @@
                 <a href="#how" data-i18n="howNav">Как работи</a>
                 <a href="#about" data-i18n="aboutNav">За библиотеката</a>
             </nav>
-
             <div class="nav-right">
                 <button type="button" id="themeToggle" class="theme-toggle" aria-label="Тъмен режим" aria-pressed="false">☾ Тъмен режим</button>
                 <button class="lang active" id="bgBtn"
@@ -41,9 +38,7 @@
             </div>
         </div>
     </header>
-
     <main>
-
         <!-- НАЧАЛНА СЕКЦИЯ -->
         <div class="hero" id="home">
             <div class="container">
@@ -51,20 +46,19 @@
                 <h1 data-i18n="welcome">
                     Добре дошъл в BookConnect
                 </h1>
-
                 <p data-i18n="heroText">
                     Открий, резервирай и заеми книги
                     от училищната библиотека.
                 </p>
-
                 <div class="search-box">
-                    <input
+                   <input
                         id="heroSearch"
                         type="search"
                         data-placeholder="searchPlaceholder"
                         placeholder="Търси книга по заглавие, автор или тема..."
-                    >
-
+                        aria-label="Търсене на книги"
+                        onkeydown="if(event.key === 'Enter') heroSearch()"
+                        >
                     <button class="btn"
                             onclick="heroSearch()"
                             data-i18n="search">
@@ -74,11 +68,9 @@
                 
             </div>
         </div>
-
         <!-- БЪРЗИ ДЕЙСТВИЯ -->
         <section>
             <div class="container quick-grid">
-
                 <a class="quick-card" href="#catalog">
                     <div class="symbol">📖</div>
                     <h3 data-i18n="browse">
@@ -88,7 +80,6 @@
                         Открий интересни книги
                     </p>
                 </a>
-
                 <a class="quick-card" href="#catalog">
                     <div class="symbol">📅</div>
                     <h3 data-i18n="reserve">
@@ -98,7 +89,6 @@
                         Запази книга онлайн
                     </p>
                 </a>
-
                 <a class="quick-card" href="#how">
                     <div class="symbol">📚</div>
                     <h3 data-i18n="borrow">
@@ -108,7 +98,6 @@
                         Вземи книга от библиотеката
                     </p>
                 </a>
-
                 <a class="quick-card" href="#myBooks"
                    onclick="showMyBooks()">
                     <div class="symbol">📊</div>
@@ -119,7 +108,6 @@
                         Проследи резервациите си
                     </p>
                 </a>
-
             </div>
         </section>
 
@@ -143,7 +131,6 @@
         <!-- КАТАЛОГ -->
         <section id="catalog">
             <div class="container">
-
                 <div class="section-title">
                     <h2 data-i18n="newBooks">
                         Книги в каталога
@@ -158,7 +145,6 @@
                         data-placeholder="filterPlaceholder"
                         placeholder="Търси по заглавие или автор..."
                     >
-
                     <select id="genreFilter">
                         <option value="all" data-i18n="allGenres">
                             Всички жанрове
@@ -176,7 +162,6 @@
                             Съвременна
                         </option>
                     </select>
-
                     <select id="availabilityFilter">
                         <option value="all" data-i18n="allBooks">
                             Всички книги
@@ -190,28 +175,22 @@
                 <div class="catalog-toolbar"><span id="resultSummary" role="status" aria-live="polite"></span><a href="#account" data-i18n="catalogAccountLink">Резервирай с профил →</a></div>
                 <!-- КНИГИТЕ СЕ ЗАРЕЖДАТ ОТ JAVASCRIPT -->
                 <div class="book-grid" id="bookGrid"></div>
-
                 <p class="empty"
                    id="noResults"
                    style="display:none"
                    data-i18n="noResults">
                     Няма намерени книги.
                 </p>
-
             </div>
         </section>
-
         <!-- КАК РАБОТИ -->
         <section class="soft" id="how">
             <div class="container">
-
                 <h2 style="text-align:center;margin-bottom:40px"
                     data-i18n="howTitle">
                     Как работи BookConnect?
                 </h2>
-
                 <div class="steps">
-
                     <div class="step">
                         <div class="step-number">🔎</div>
                         <h3 data-i18n="step1">
@@ -221,7 +200,6 @@
                             Потърси по заглавие, автор или тема.
                         </p>
                     </div>
-
                     <div class="step">
                         <div class="step-number">📅</div>
                         <h3 data-i18n="step2">
@@ -231,7 +209,6 @@
                             Запази избраната книга онлайн.
                         </p>
                     </div>
-
                     <div class="step">
                         <div class="step-number">📖</div>
                         <h3 data-i18n="step3">
@@ -241,7 +218,6 @@
                             Вземи книгата от библиотекаря.
                         </p>
                     </div>
-
                     <div class="step">
                         <div class="step-number">✔</div>
                         <h3 data-i18n="step4">
@@ -251,11 +227,9 @@
                             Върни книгата в определения срок.
                         </p>
                     </div>
-
                 </div>
             </div>
         </section>
-
         <!-- МОИТЕ РЕЗЕРВАЦИИ -->
         <section id="myBooks" class="reservations-section">
             <div class="container">
@@ -263,30 +237,23 @@
                 <span class="section-kicker" data-i18n="myBooksKicker">МОЯТА БИБЛИОТЕКА</span>\n                <h2 data-i18n="myReservations">
                     Моите резервации
                 </h2>
-
                 <p data-i18n="demoNote">
                     Реални резервации в Supabase за влезлия потребител.
                 </p>
-
                 <div id="reservationList"></div>
-
             </div>
         </section>
-
         <!-- ЗА БИБЛИОТЕКАТА -->
         <section id="about">
             <div class="container about">
-
                 <img
                     src="https://images.unsplash.com/photo-1507842217343-583bb7270b66?w=900"
                     alt="Училищна библиотека"
                 >
-
                 <div>
                     <h2 data-i18n="aboutTitle">
                         За нашата библиотека
                     </h2>
-
                     <p data-i18n="aboutText">
                         BookConnect е уеб система за управление
                         на училищната библиотека.
@@ -294,7 +261,6 @@
                         книги, а библиотекарят организира
                         заеманията и връщанията.
                     </p>
-
                     <a class="btn"
                        href="#catalog"
                        style="display:inline-block"
@@ -302,12 +268,9 @@
                         Разгледай книгите
                     </a>
                 </div>
-
             </div>
         </section>
-
     </main>
-
     <!-- FOOTER -->
     <footer>
         <div class="container footer-inner">
@@ -317,16 +280,13 @@
                     Училищна библиотека
                 </p>
             </div>
-
             <p>© 2026 BookConnect</p>
         </div>
     </footer>
-
     <!-- ПРОЗОРЕЦ С ПОДРОБНОСТИ ЗА КНИГА -->
     <div class="modal"
          id="bookModal"
          onclick="closeOnBackdrop(event)">
-
         <div class="modal-content"
              role="dialog"
              aria-modal="true"
@@ -334,7 +294,6 @@
 
             <div class="modal-head">
                 <h2 id="modalTitle"></h2>
-
                 <button class="close"
                         onclick="closeModal()"
                         aria-label="Close">
