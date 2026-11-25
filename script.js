@@ -306,7 +306,7 @@ async function loadBooksFromSupabase() {
 function fallbackCover(book) {
   const palette = ["#1c3b61", "#80502e", "#365d4d", "#713b55", "#624a8c", "#945c31"];
   const shade = palette[Math.abs(Number(book.id) || 0) % palette.length];
-  const title = String(book.title?.[language] || book.title?.bg || "Book");
+  const title = String(book.title?.bg || book.title?.en || "Book");
   const words = title.trim().split(/\s+/);
   const lines = [];
   let line = "";
@@ -356,7 +356,7 @@ function setCover(image, book) {
     const url = new URL(book.cover || "", location.href);
     if (book.cover && url.protocol === "https:" && !/placeholder|placehold\.co|dummyimage|picsum/i.test(url.hostname)) source = url.href;
   } catch {}
-  if (!source && match && language === "en") source = "https://covers.openlibrary.org/b/isbn/" + match[1] + "-L.jpg?default=false";
+  if (!source && match) source = "https://covers.openlibrary.org/b/isbn/" + match[1] + "-L.jpg?default=false";
   image.onerror = () => { image.onerror = null; image.src = fallback; };
   const title = String(book.title?.bg || "").trim().toLocaleLowerCase("bg-BG");
   const artwork = {
@@ -398,7 +398,7 @@ function setCover(image, book) {
   "задругата на пръстена": "Задругата на пръстена под планините.png",
   "немили – недраги": "BookConnect-new-covers-part6/nemili-nedragi.jpg"
 };
-  if (language === "bg" && Object.hasOwn(artwork,title)) {
+  if (Object.hasOwn(artwork,title)) {
     image.onerror = () => { image.onerror = () => { image.onerror=null; image.src=fallback; }; image.src=source||fallback; };
     image.src=artwork[title];
   } else image.src = source || fallback;
