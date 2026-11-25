@@ -45,3 +45,17 @@ html:not([data-theme="dark"]) .filters input,html:not([data-theme="dark"]) .filt
 /* Approved mockup proportions and local hero photograph */
 .editorial-photo{background-image:url("assets/editorial/library.jpg"),url("https://images.unsplash.com/photo-1507842217343-583bb7270b66?w=1400&fit=crop");min-height:0;aspect-ratio:2.2}
 @media(min-width:1001px){.editorial-hero{grid-template-columns: .78fr 1.22fr;gap:7vw}.hero{padding:28px 0 20px}.hero h1{font-size:clamp(48px,4.8vw,74px)}.book-grid{gap:clamp(24px,4.5vw,70px)}.book-card .book-cover{aspect-ratio: .78}}
+
+/* Editorial account and reading dashboard */
+.editorial-menu{position:relative;font-size:13px}
+.editorial-menu summary{cursor:pointer;white-space:nowrap}
+.editorial-menu-links{position:absolute;right:0;top:calc(100% + 12px);min-width:170px;display:grid;gap:12px;padding:16px;background:var(--bc-surface);border:1px solid var(--bc-border);border-radius:8px;box-shadow:0 8px 24px #21191422;z-index:50}
+.personal-tabs{gap:8px;flex-wrap:wrap}
+html:not([data-theme="dark"]) .personal-tabs button{background:#f7f2e9;color:#593522;border:1px solid #d9c9b5;border-radius:999px}
+html:not([data-theme="dark"]) .personal-tabs button[aria-selected="true"],html:not([data-theme="dark"]) .personal-tabs button.active{background:#593522;color:#fffaf2}
+html:not([data-theme="dark"]) .personal-panel{background:#fffaf2;border:1px solid #d9c9b5;border-radius:10px;padding:clamp(18px,3vw,36px)}
+html:not([data-theme="dark"]) .personal-panel.personal-premium{background:linear-gradient(120deg,#fffaf2,#e9dbc5);border:1px solid #aa8964;color:#39261d}
+.personal-premium h3{font-size:clamp(26px,3vw,40px)}
+.book-card .tag{font-size:11px}
+.book-card .available,.book-card .unavailable{font-size:12px}
+@media(max-width:650px){.editorial-menu-links{left:0;right:auto}}
