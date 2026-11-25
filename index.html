@@ -26,7 +26,7 @@
                 
                 <a href="#catalog" data-i18n="catalog">Каталог</a>
                 <a href="#personalLibrary" data-i18n="personalNav">Моята библиотека</a>
-                <details class="editorial-menu"><summary data-i18n="accountTitle">Профил</summary><div class="editorial-menu-links"><a href="#account" data-i18n="accountTitle">Профил</a><a href="librarian.html" data-i18n="librarianNav">Библиотекар</a></div></details>
+                
                 <a href="#myBooks"
                    onclick="showMyBooks()"
                    data-i18n="myBooks">Моите книги</a>
@@ -36,10 +36,22 @@
 
             <div class="nav-right">
                 <button type="button" id="themeToggle" class="theme-toggle" aria-label="Тъмен режим" aria-pressed="false">☾ Тъмен режим</button>
-                <button class="lang active" id="bgBtn"
-                        onclick="setLanguage('bg')">BG</button>
-                <button class="lang" id="enBtn"
-                        onclick="setLanguage('en')">EN</button>
+                <details class="editorial-menu language-menu" id="languageMenu">
+                    <summary aria-label="Language / Език"><span id="currentLanguage">BG</span></summary>
+                    <div class="editorial-menu-links">
+                        <button type="button" class="lang active" id="bgBtn" onclick="setLanguage('bg');this.closest('details').open=false">Български · BG</button>
+                        <button type="button" class="lang" id="enBtn" onclick="setLanguage('en');this.closest('details').open=false">English · EN</button>
+                    </div>
+                </details>
+                <details class="editorial-menu profile-menu">
+                    <summary aria-label="Profile / Профил"><span id="profileAvatar" class="profile-avatar"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="12" cy="8" r="3.5"/><path d="M5 21v-2a7 7 0 0 1 14 0v2"/></svg></span></summary>
+                    <div class="editorial-menu-links">
+                        <a href="#account" data-i18n="accountTitle" onclick="this.closest('details').open=false">Профил</a>
+                        <a href="#personalLibrary" data-i18n="personalNav" onclick="this.closest('details').open=false">Моята библиотека</a>
+                        <a href="#myBooks" data-i18n="myBooks" onclick="showMyBooks();this.closest('details').open=false">Моите книги</a>
+                        <a href="librarian.html" data-i18n="librarianNav">Библиотекар</a>
+                    </div>
+                </details>
             </div>
         </div>
     </header>
