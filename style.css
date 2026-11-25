@@ -656,3 +656,15 @@ footer p {
 .catalog-toolbar a:hover { text-decoration: underline; }
 .book-cover { display: block; object-fit: cover; }
 @media (max-width: 600px) { .catalog-toolbar { margin-bottom: 18px; } }
+
+/* Personal library additions: inherit the existing theme and button styles. */
+#personalLibrary { display:grid; gap:12px; }
+#personalLibrary h3, #personalDetails h3 { margin-top:12px; }
+.personal-row { display:flex; flex-wrap:wrap; gap:8px; }
+#personalLibrary input, #personalDetails select, #personalDetails textarea, #personalDetails input { max-width:100%; color:inherit; font:inherit; }
+#personalLibrary input[type=number] { width:80px; }
+#personalLibrary progress { width:100%; max-width:360px; }
+#personalDetails { display:grid; gap:10px; margin-top:16px; }
+#personalDetails textarea { min-height:80px; resize:vertical; }
+.book-card button[aria-pressed=true] { color:#e85b79; }
+#bookModal .modal-content { max-height:90vh; overflow-y:auto; }
