@@ -50,32 +50,43 @@ function favoriteButton(book) {
   b.setAttribute("aria-label",personalText("Любима книга","Favorite book")+": "+book.title[language]);
   return b;
 }
+let personalTab = "favorites";
 function renderPersonalLibrary() {
   const root=document.getElementById("personalLibrary");if(!root)return;
   const s=personalLibrary.read(),year=String(new Date().getFullYear());
   root.replaceChildren(personalElement("h2",personalText("Моята библиотека","My personal library")),
     personalElement("p",personalText("Данните са само в този браузър.","Data is stored only in this browser.")));
+  const tabs=personalElement("div",undefined,"personal-tabs");
+  const choices=[["favorites",personalText("♥ Любими","♥ Favorites")],["recent",personalText("История","History")],["recommended",personalText("Препоръки","Recommendations")],["challenge",personalText("Предизвикателство","Challenge")],["premium","Premium"]];
+  for(const [key,label] of choices){const b=personalButton(label,()=>{personalTab=key;renderPersonalLibrary();document.querySelector("#personalLibrary [aria-pressed=true]")?.focus();});b.setAttribute("aria-pressed",String(key===personalTab));tabs.append(b);}
+  root.append(tabs);
+  const panel=personalElement("div",undefined,"personal-panel");root.append(panel);
   function group(label,items) {
-    root.append(personalElement("h3",label));
+    panel.append(personalElement("h3",label));
     const row=personalElement("div",undefined,"personal-row");
     for(const b of items)row.append(personalButton(b.title[language],()=>openBook(b.id)));
     if(!items.length)row.append(personalElement("p",personalText("Все още няма книги.","No books yet.")));
-    root.append(row);
+    panel.append(row);
   }
-  group(personalText("♥ Любими","♥ Favorites"),books.filter(b=>s.favorites.includes(personalLibrary.id(b))));
-  group(personalText("Последно разглеждани","Recently viewed"),s.recent.map(id=>books.find(b=>personalLibrary.id(b)===id)).filter(Boolean));
-  group(personalText("Препоръчани за теб","Recommended for you"),personalLibrary.recommendations(books));
+  if(personalTab==="favorites") group(personalText("♥ Любими","♥ Favorites"),books.filter(b=>s.favorites.includes(personalLibrary.id(b))));
+  if(personalTab==="recent") group(personalText("Последно разглеждани","Recently viewed"),s.recent.map(id=>books.find(b=>personalLibrary.id(b)===id)).filter(Boolean));
+  if(personalTab==="recommended") group(personalText("Препоръчани за теб","Recommended for you"),personalLibrary.recommendations(books));
+  if(personalTab==="challenge") {
   const goal=Number(s.goals[year])||12,done=Array.isArray(s.finished[year])?new Set(s.finished[year]).size:0;
-  root.append(personalElement("h3",personalText("Годишно предизвикателство","Annual reading challenge")+" "+year));
+  panel.append(personalElement("h3",personalText("Годишно предизвикателство","Annual reading challenge")+" "+year));
   const label=personalElement("label",personalText("Цел (книги): ","Goal (books): "));
   const input=personalElement("input");input.type="number";input.min="1";input.max="365";input.value=String(goal);label.append(input);
   const progress=personalElement("progress");progress.max=goal;progress.value=Math.min(done,goal);
-  root.append(label,personalButton(personalText("Запази целта","Save goal"),()=>{if(input.reportValidity()&&Number.isInteger(Number(input.value))&&Number(input.value)>=1&&Number(input.value)<=365){personalLibrary.change(v=>v.goals[year]=Number(input.value));renderPersonalLibrary();}}),personalElement("p",done+" / "+goal),progress);
+  panel.append(label,personalButton(personalText("Запази целта","Save goal"),()=>{if(input.reportValidity()&&Number.isInteger(Number(input.value))&&Number(input.value)>=1&&Number(input.value)<=365){personalLibrary.change(v=>v.goals[year]=Number(input.value));renderPersonalLibrary();}}),personalElement("p",done+" / "+goal),progress);
+  }
+  if(personalTab==="premium") {
   const active=s.premiumUntil>Date.now();
-  root.append(personalElement("h3","BookConnect Premium — €27 / "+personalText("година","year")),
+  panel.classList.add("personal-premium");
+  panel.append(personalElement("h3","BookConnect Premium — €27 / "+personalText("година","year")),
     personalElement("p",personalText("Демо абонамент, без плащане или отключване на лицензирани книги.","Demo subscription, no payment or licensed content unlocked.")),
     personalElement("p",active?personalText("Демо активен до ","Demo active until ")+new Date(s.premiumUntil).toLocaleDateString(language):personalText("Неактивен","Inactive")),
     personalButton(active?personalText("Прекрати демото","End demo"):personalText("Активирай демо","Activate demo"),()=>{personalLibrary.change(v=>{const d=new Date();d.setFullYear(d.getFullYear()+1);v.premiumUntil=active?0:d.getTime();});renderPersonalLibrary();}));
+  }
 }
 function renderPersonalDetails(book) {
   const root=document.getElementById("personalDetails");if(!root)return;
