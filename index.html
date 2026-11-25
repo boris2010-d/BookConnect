@@ -22,7 +22,8 @@
                 Book<span>Connect</span>
             </a>
 
-            <nav>
+            <button type="button" class="mobile-nav-toggle" aria-label="Меню / Menu" aria-controls="mainNavigation" aria-expanded="false" onclick="this.setAttribute('aria-expanded', String(this.getAttribute('aria-expanded') !== 'true'))"><span aria-hidden="true">☰</span></button>
+            <nav id="mainNavigation" onclick="if(event.target.closest('a')) document.querySelector('.mobile-nav-toggle').setAttribute('aria-expanded','false')">
                 
                 <a href="#catalog" data-i18n="catalog">Каталог</a>
                 <a href="#personalLibrary" data-i18n="personalNav">Моята библиотека</a>
