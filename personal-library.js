@@ -22,6 +22,7 @@ const personalLibrary = (() => {
   const id=b=>String(b.id);
   let remoteFavorites = null, remoteOwner = null, pending = false;
   async function syncFavorites() {
+    void syncReviews();
     void syncHistory();
     const owner=currentUser?.id;
     if (!owner) { remoteOwner=null; remoteFavorites=null; return; }
@@ -48,7 +49,29 @@ const personalLibrary = (() => {
     } catch(e){showNotice(personalText("Любимата книга не е запазена.","Favorite could not be saved."));return false;}
     finally{pending=false;}
   }
-  function view(){const s=read();if(currentUser){s.favorites=remoteOwner===currentUser.id?(remoteFavorites||[]):[];s.recent=historyOwner===currentUser.id?remoteRecent:[];}return s;}
+  let reviewOwner=null, remoteReviews={}, reviewVersion=0;
+  async function syncReviews(){
+    const owner=currentUser?.id, version=++reviewVersion;
+    if(reviewOwner!==owner){reviewOwner=owner;remoteReviews={};}
+    if(!owner)return;
+    try {
+      const {data,error}=await db.from("reviews").select("book_id,rating,comment").eq("user_id",owner);
+      if(error)throw error;
+      if(currentUser?.id===owner&&version===reviewVersion)remoteReviews=Object.fromEntries(data.map(r=>[String(r.book_id),{rating:r.rating,comment:r.comment}]));
+    }catch(e){if(currentUser?.id===owner)showNotice(personalText("Ревютата не са заредени.","Reviews could not be loaded."));}
+  }
+  async function saveReview(book,value){
+    const owner=currentUser?.id, bookId=id(book);
+    if(!owner)return change(v=>{if(value)v.reviews[bookId]=value;else delete v.reviews[bookId];});
+    try{
+      const {error}=await (value?db.from("reviews").upsert({user_id:owner,book_id:bookId,...value},{onConflict:"user_id,book_id"}):db.from("reviews").delete().eq("user_id",owner).eq("book_id",bookId));
+      if(error)throw error;
+      if(currentUser?.id!==owner)return false;
+      await syncReviews();
+      return currentUser?.id===owner;
+    }catch(e){if(currentUser?.id===owner)showNotice(personalText("Ревюто не е променено.","Review could not be changed."));return false;}
+  }
+  function view(){const s=read();if(currentUser){s.favorites=remoteOwner===currentUser.id?(remoteFavorites||[]):[];s.recent=historyOwner===currentUser.id?remoteRecent:[];s.reviews=reviewOwner===currentUser.id?remoteReviews:{};}return s;}
   let historyOwner=null, remoteRecent=[], historyVersion=0;
   async function syncHistory(){
     const owner=currentUser?.id;
@@ -80,7 +103,7 @@ const personalLibrary = (() => {
       .map((b,i)=>({b,i,score:weights.get(b.genre)||0}))
       .sort((a,b)=>b.score-a.score||a.i-b.i).slice(0,4).map(x=>x.b);
   }
-  return {read:view,change,id,favorite,toggle,visit,recommendations,syncFavorites};
+  return {read:view,change,id,favorite,toggle,visit,recommendations,syncFavorites,saveReview};
 })();
 
 const personalText=(bg,en)=>language==="bg"?bg:en;
@@ -102,7 +125,7 @@ function renderPersonalLibrary() {
   const root=document.getElementById("personalLibrary");if(!root)return;
   const s=personalLibrary.read(),year=String(new Date().getFullYear());
   root.replaceChildren(personalElement("h2",personalText("Моята библиотека","My personal library")),
-    personalElement("p",personalText("Любимите книги и историята се синхронизират при вход. Другите лични данни са локални.","Favorites and history sync when signed in. Other personal data is local.")));
+    personalElement("p",personalText("Любимите книги, историята и ревютата се синхронизират при вход. Другите лични данни са локални.","Favorites, history and reviews sync when signed in. Other personal data is local.")));
   const tabs=personalElement("div",undefined,"personal-tabs");
   const choices=[["favorites",personalText("♥ Любими","♥ Favorites")],["recent",personalText("История","History")],["recommended",personalText("Препоръки","Recommendations")],["challenge",personalText("Предизвикателство","Challenge")],["premium","Premium"]];
   for(const [key,label] of choices){const b=personalButton(label,()=>{personalTab=key;renderPersonalLibrary();document.querySelector("#personalLibrary [aria-pressed=true]")?.focus();});b.setAttribute("aria-pressed",String(key===personalTab));tabs.append(b);}
@@ -148,8 +171,8 @@ function renderPersonalDetails(book) {
   for(let i=1;i<=5;i++){const o=personalElement("option",i+" ★");o.value=String(i);rating.append(o);}rating.value=String(review.rating||5);
   const comment=personalElement("textarea");comment.maxLength=500;comment.value=typeof review.comment==="string"?review.comment:"";comment.placeholder=personalText("Лично ревю","Private review");comment.setAttribute("aria-label",comment.placeholder);
   root.append(personalElement("h3",personalText("Моята оценка и ревю","My rating and review")),rating,comment,
-    personalButton(personalText("Запази ревю","Save review"),()=>{if(personalLibrary.change(v=>v.reviews[id]={rating:Number(rating.value),comment:comment.value.trim()}))showNotice(personalText("Ревюто е запазено локално.","Review saved locally."));}),
-    personalButton(personalText("Изтрий ревю","Delete review"),()=>{personalLibrary.change(v=>delete v.reviews[id]);renderPersonalDetails(book);}));
+    personalButton(personalText("Запази ревю","Save review"),async()=>{if(await personalLibrary.saveReview(book,{rating:Number(rating.value),comment:comment.value.trim()}))showNotice(personalText("Ревюто е запазено.","Review saved."));}),
+    personalButton(personalText("Изтрий ревю","Delete review"),async()=>{if(await personalLibrary.saveReview(book,null)&&root.contains(comment))renderPersonalDetails(book);}));
   const source = publicBookSource(book);
   if (source) { const link=personalElement("a",personalText("Пълно издание и PDF — Читанка","Full Bulgarian edition and PDF — Chitanka"),"btn btn-outline"); link.href=source;link.target="_blank";link.rel="noopener noreferrer";root.append(link); }
   const pdfUrl = catalogPdfUrl(book);
