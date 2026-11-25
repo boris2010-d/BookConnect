@@ -9,7 +9,8 @@
     <link rel="stylesheet" href="theme.css">
     <script src="theme.js" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js" defer></script>
-    <script src="script.js?v=20261123-coverfix" defer></script>
+    <script src="personal-library.js?v=1" defer></script>
+    <script src="script.js?v=20261125-personal" defer></script>
 </head>
 <body>
 
@@ -154,11 +155,13 @@
                 <div class="filters">
                     <input
                         id="catalogSearch"
+                        list="catalogSuggestions"
                         type="search"
                         data-placeholder="filterPlaceholder"
                         placeholder="Търси по заглавие или автор..."
                     >
 
+                    <datalist id="catalogSuggestions"></datalist>
                     <select id="genreFilter">
                         <option value="all" data-i18n="allGenres">
                             Всички жанрове
@@ -201,6 +204,7 @@
             </div>
         </section>
 
+        <section class="soft"><div class="container" id="personalLibrary"></div></section>
         <!-- КАК РАБОТИ -->
         <section class="soft" id="how">
             <div class="container">
@@ -356,6 +360,7 @@
                     onclick="reserveSelected()">
                 Резервирай книга
             </button>
+            <div id="personalDetails"></div>
 
         </div>
     </div>
