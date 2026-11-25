@@ -404,11 +404,13 @@ function renderBooks() {
     button.addEventListener("click", () => openBook(book.id));
 
     card.append(image, title, author, genreTag, count, button);
+    if (typeof favoriteButton === "function") card.append(favoriteButton(book));
     grid.appendChild(card);
   });
 
   document.getElementById("noResults").style.display =
     filtered.length ? "none" : "block";
+  if (typeof renderPersonalLibrary === "function") { renderPersonalLibrary(); updateSearchSuggestions(); }
 }
 
 // HERO SEARCH
@@ -429,6 +431,7 @@ function openBook(id) {
   const book = books.find(book => book.id === id);
   if (!book) return;
 
+  if (typeof personalLibrary !== "undefined" && selectedBookId !== id) personalLibrary.visit(book);
   selectedBookId = id;
 
   document.getElementById("modalTitle").textContent =
@@ -462,6 +465,7 @@ function openBook(id) {
   button.disabled = pendingReservation || alreadyReserved || remaining === 0;
   button.style.opacity = button.disabled ? ".5" : "1";
 
+  if (typeof renderPersonalDetails === "function") { renderPersonalDetails(book); renderPersonalLibrary(); }
   document.getElementById("bookModal").classList.add("open");
   document.body.style.overflow = "hidden";
 }
