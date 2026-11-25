@@ -445,18 +445,6 @@ function renderBooks() {
   if (typeof renderPersonalLibrary === "function") { renderPersonalLibrary(); updateSearchSuggestions(); }
 }
 
-// HERO SEARCH
-
-function heroSearch() {
-  document.getElementById("catalogSearch").value =
-    document.getElementById("heroSearch").value;
-
-  renderBooks();
-
-  document.getElementById("catalog")
-    .scrollIntoView({ behavior: "smooth" });
-}
-
 // BOOK DETAILS MODAL
 
 function openBook(id) {
@@ -616,12 +604,7 @@ document.getElementById("genreFilter")
 document.getElementById("availabilityFilter")
   .addEventListener("change", renderBooks);
 
-document.getElementById("heroSearch")
-  .addEventListener("keydown", event => {
-    if (event.key === "Enter") {
-      heroSearch();
-    }
-  });
+
 
 document.addEventListener("keydown", event => {
   if (event.key === "Escape") {
