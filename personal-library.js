@@ -92,12 +92,40 @@ function renderPersonalDetails(book) {
   root.append(personalElement("h3",personalText("Моята оценка и ревю","My rating and review")),rating,comment,
     personalButton(personalText("Запази ревю","Save review"),()=>{if(personalLibrary.change(v=>v.reviews[id]={rating:Number(rating.value),comment:comment.value.trim()}))showNotice(personalText("Ревюто е запазено локално.","Review saved locally."));}),
     personalButton(personalText("Изтрий ревю","Delete review"),()=>{personalLibrary.change(v=>delete v.reviews[id]);renderPersonalDetails(book);}));
-  const pdf=personalElement("input");pdf.type="file";pdf.accept="application/pdf,.pdf";pdf.setAttribute("aria-label",personalText("Избери разрешен PDF","Choose authorized PDF"));
-  pdf.addEventListener("change",()=>{const file=pdf.files[0];if(!file)return;if(file.type!=="application/pdf"&&!/\.pdf$/i.test(file.name))return;const url=URL.createObjectURL(file);const a=document.createElement("a");a.href=url;a.target="_blank";a.rel="noopener noreferrer";a.click();setTimeout(()=>URL.revokeObjectURL(url),60000);});
-  root.append(personalElement("h3",personalText("Чети собствен PDF","Read your own PDF")),personalElement("p",personalText("Избери файл, който имаш право да четеш. Не се качва на сървър.","Choose a file you have permission to read. It is not uploaded.")),pdf);
+  const pdfUrl = catalogPdfUrl(book);
+  const reader = personalButton(personalText("Чети онлайн (PDF)","Read online (PDF)"),()=>openCatalogPdf(book,pdfUrl));
+  reader.disabled = !pdfUrl;
+  root.append(reader);
+  if (!pdfUrl) root.append(personalElement("p",personalText("Онлайн изданието все още не е налично.","Online edition is not available yet.")));
 }
 function updateSearchSuggestions() {
   const input=document.getElementById("catalogSearch"),list=document.getElementById("catalogSuggestions");if(!input||!list)return;
   list.replaceChildren();if(!input.value.trim())return;
   for(const b of rankCatalog(books,input.value).slice(0,6)){const o=document.createElement("option");o.value=b.title[language];list.append(o);}
+}
+
+ // Add only authorized PDF editions here, keyed by the exact catalog book ID.
+const catalogPdfEditions = Object.freeze({});
+function catalogPdfUrl(book) {
+  const entry = catalogPdfEditions[String(book.id)];
+  if (!entry) return null;
+  const url = typeof entry === "string" ? entry : entry[language];
+  if (typeof url !== "string") return null;
+  try {
+    const parsed = new URL(url, location.href);
+    if (parsed.origin === location.origin && parsed.pathname.startsWith(new URL("pdf/",location.href).pathname) && /\.pdf$/i.test(parsed.pathname)) return parsed.href;
+  } catch {}
+  return null;
+}
+function openCatalogPdf(book,url) {
+  if (!url || url !== catalogPdfUrl(book)) return;
+  const dialog = document.createElement("dialog");
+  dialog.style.cssText="width:95vw;height:90vh;max-width:1200px;padding:12px;border:0;border-radius:12px;background:Canvas;color:CanvasText;";
+  const header=personalElement("div",undefined,"personal-row");
+  header.append(personalElement("h2",book.title[language]),personalButton(personalText("Затвори","Close"),()=>dialog.close()));
+  const frame=document.createElement("iframe");
+  frame.title=book.title[language];frame.src=url;frame.style.cssText="width:100%;height:calc(100% - 85px);border:0;";
+  const fallback=personalElement("a",personalText("Отвори PDF при проблем с четеца","Open PDF if viewer is unavailable"));fallback.href=url;fallback.target="_blank";fallback.rel="noopener";
+  dialog.append(header,fallback,frame);document.body.append(dialog);
+  dialog.addEventListener("close",()=>dialog.remove(),{once:true});dialog.showModal();
 }
