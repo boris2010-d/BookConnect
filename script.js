@@ -361,11 +361,11 @@ function setCover(image, book) {
   const title = String(book.title?.bg || "").trim().toLocaleLowerCase("bg-BG");
   const artwork = {
   "1984": "BookConnect-new-covers-part1/1984.jpg",
-  "под игото": "assets/editorial/pod-igoto.jpg",
-  "бай ганьо": "assets/editorial/bay-ganyo.jpg",
-  "малкият принц": "assets/editorial/little-prince.jpg",
-  "хари потър и философският камък": "assets/editorial/harry-potter.jpg",
-  "хобит": "assets/editorial/hobbit.jpg",
+  "под игото": "Под игото_ Залез над България-1.png",
+  "бай ганьо": "Бай Ганьо на гарата-6.png",
+  "малкият принц": "Малкият принц под звездите.png",
+  "хари потър и философският камък": "Магическа нощ над Хогуортс.png",
+  "хобит": "Златният дом на хобита-7.png",
   "граф монте кристо": "BookConnect-new-covers-part1/graf-monte-kristo.jpg",
   "алхимикът": "BookConnect-new-covers-part2/alchemist.jpg",
   "цветя за алджърнън": "BookConnect-new-covers-part2/flowers-for-algernon.jpg",
