@@ -7,6 +7,7 @@
     <title>BookConnect — Училищна библиотека</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="theme.css">
+    <link rel="stylesheet" href="editorial.css">
     <script src="theme.js" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js" defer></script>
     <script src="personal-library.js?v=1" defer></script>
@@ -18,12 +19,13 @@
     <header>
         <div class="container nav">
             <a class="logo" href="#home">
-                📖 Book<span>Connect</span>
+                Book<span>Connect</span>
             </a>
 
             <nav>
                 <a href="#home" data-i18n="home">Начало</a>
                 <a href="#catalog" data-i18n="catalog">Каталог</a>
+                <a href="#personalLibrary" data-i18n="personalNav">Моята библиотека</a>
                 <a href="librarian.html" data-i18n="librarianNav">Библиотекар</a>
                 <a href="#account" data-i18n="accountTitle">Профил</a>
                 <a href="#myBooks"
@@ -47,7 +49,7 @@
 
         <!-- НАЧАЛНА СЕКЦИЯ -->
         <div class="hero" id="home">
-            <div class="container">
+            <div class="container editorial-hero"><div class="editorial-copy">
                 <div class="hero-eyebrow" data-i18n="heroEyebrow">НОВО · ЕТАП 3 · РЕАЛНИ РЕЗЕРВАЦИИ</div>
                 <h1 data-i18n="welcome">
                     Добре дошъл в BookConnect
@@ -72,74 +74,10 @@
                         Търси
                     </button>
                 </div>
-                
+                <div class="hero-cta"><a class="btn" href="#catalog" data-i18n="browse">Разгледай каталога</a><a class="btn btn-outline" href="#personalLibrary" data-i18n="personalNav">Моята библиотека</a></div>
+                </div><div class="editorial-photo" role="img" aria-label="Library"></div>
             </div>
         </div>
-
-        <!-- БЪРЗИ ДЕЙСТВИЯ -->
-        <section>
-            <div class="container quick-grid">
-
-                <a class="quick-card" href="#catalog">
-                    <div class="symbol">📖</div>
-                    <h3 data-i18n="browse">
-                        Разгледай каталога
-                    </h3>
-                    <p data-i18n="browseDesc">
-                        Открий интересни книги
-                    </p>
-                </a>
-
-                <a class="quick-card" href="#catalog">
-                    <div class="symbol">📅</div>
-                    <h3 data-i18n="reserve">
-                        Резервирай книга
-                    </h3>
-                    <p data-i18n="reserveDesc">
-                        Запази книга онлайн
-                    </p>
-                </a>
-
-                <a class="quick-card" href="#how">
-                    <div class="symbol">📚</div>
-                    <h3 data-i18n="borrow">
-                        Заеми книга
-                    </h3>
-                    <p data-i18n="borrowDesc">
-                        Вземи книга от библиотеката
-                    </p>
-                </a>
-
-                <a class="quick-card" href="#myBooks"
-                   onclick="showMyBooks()">
-                    <div class="symbol">📊</div>
-                    <h3 data-i18n="stats">
-                        Моите книги
-                    </h3>
-                    <p data-i18n="statsDesc">
-                        Проследи резервациите си
-                    </p>
-                </a>
-
-            </div>
-        </section>
-
-        <!-- STAGE 3 — ACCOUNT AND REAL SUPABASE RESERVATIONS -->
-        <section class="soft account-section" id="account">
-          <div class="container">
-            <h2 data-i18n="accountTitle">Профил и резервации</h2>
-            <p data-i18n="accountHelp">Регистрирай се или влез, за да резервираш реални екземпляри от Supabase.</p>
-            <form id="accountForm" class="form-grid stage-three-form">
-              <label><span data-i18n="accountEmail">Имейл</span><input type="email" id="accountEmail" autocomplete="email" required></label>
-              <label><span data-i18n="accountPassword">Парола</span><input type="password" id="accountPassword" minlength="6" autocomplete="current-password" required></label>
-              <button type="submit" id="signInBtn" class="btn" data-i18n="signIn">Вход</button>
-              <button type="button" id="signUpBtn" class="btn btn-outline" data-i18n="signUp">Регистрация</button>
-            </form>
-            <p id="accountStatus" role="status" aria-live="polite"></p>
-            <button type="button" id="signOutBtn" class="btn btn-outline" hidden data-i18n="signOut">Изход</button>
-          </div>
-        </section>
-
 
         <!-- КАТАЛОГ -->
         <section id="catalog">
@@ -205,6 +143,71 @@
         </section>
 
         <section class="soft"><div class="container" id="personalLibrary"></div></section>
+        <!-- БЪРЗИ ДЕЙСТВИЯ -->
+        <section>
+            <div class="container quick-grid">
+
+                <a class="quick-card" href="#catalog">
+                    <div class="symbol">📖</div>
+                    <h3 data-i18n="browse">
+                        Разгледай каталога
+                    </h3>
+                    <p data-i18n="browseDesc">
+                        Открий интересни книги
+                    </p>
+                </a>
+
+                <a class="quick-card" href="#catalog">
+                    <div class="symbol">📅</div>
+                    <h3 data-i18n="reserve">
+                        Резервирай книга
+                    </h3>
+                    <p data-i18n="reserveDesc">
+                        Запази книга онлайн
+                    </p>
+                </a>
+
+                <a class="quick-card" href="#how">
+                    <div class="symbol">📚</div>
+                    <h3 data-i18n="borrow">
+                        Заеми книга
+                    </h3>
+                    <p data-i18n="borrowDesc">
+                        Вземи книга от библиотеката
+                    </p>
+                </a>
+
+                <a class="quick-card" href="#myBooks"
+                   onclick="showMyBooks()">
+                    <div class="symbol">📊</div>
+                    <h3 data-i18n="stats">
+                        Моите книги
+                    </h3>
+                    <p data-i18n="statsDesc">
+                        Проследи резервациите си
+                    </p>
+                </a>
+
+            </div>
+        </section>
+
+        <!-- STAGE 3 — ACCOUNT AND REAL SUPABASE RESERVATIONS -->
+        <section class="soft account-section" id="account">
+          <div class="container">
+            <h2 data-i18n="accountTitle">Профил и резервации</h2>
+            <p data-i18n="accountHelp">Регистрирай се или влез, за да резервираш реални екземпляри от Supabase.</p>
+            <form id="accountForm" class="form-grid stage-three-form">
+              <label><span data-i18n="accountEmail">Имейл</span><input type="email" id="accountEmail" autocomplete="email" required></label>
+              <label><span data-i18n="accountPassword">Парола</span><input type="password" id="accountPassword" minlength="6" autocomplete="current-password" required></label>
+              <button type="submit" id="signInBtn" class="btn" data-i18n="signIn">Вход</button>
+              <button type="button" id="signUpBtn" class="btn btn-outline" data-i18n="signUp">Регистрация</button>
+            </form>
+            <p id="accountStatus" role="status" aria-live="polite"></p>
+            <button type="button" id="signOutBtn" class="btn btn-outline" hidden data-i18n="signOut">Изход</button>
+          </div>
+        </section>
+
+
         <!-- КАК РАБОТИ -->
         <section class="soft" id="how">
             <div class="container">
