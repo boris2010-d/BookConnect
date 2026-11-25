@@ -303,11 +303,12 @@ function fallbackCover(book) {
   if (line) lines.push(line);
   const escapeXml = value => String(value).replace(/[&<>"']/g, char =>
     ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&apos;"}[char]));
-  const maxLines = lines.slice(0, 4);
-  if (lines.length > 4) maxLines[3] += "…";
+  const maxLines = lines;
+  const fontSize = Math.min(27, 250 / Math.max(1, ...maxLines.map(value => value.length)) * 1.55, 230 / Math.max(1, maxLines.length));
+  const lineHeight = fontSize * 1.4;
   const text = maxLines.map((value, i) =>
-    '<text x="150" y="' + (222 - (maxLines.length - 1) * 20 + i * 40) +
-    '" font-size="27" font-family="Arial,sans-serif" font-weight="bold" text-anchor="middle" fill="#ffffff">' +
+    '<text x="150" y="' + (210 - (maxLines.length - 1) * lineHeight / 2 + i * lineHeight) +
+    '" font-size="' + fontSize + '" font-family="Arial,sans-serif" font-weight="bold" text-anchor="middle" fill="#ffffff">' +
     escapeXml(value) + '</text>').join("");
   const svg = '<svg xmlns="http://www.w3.org/2000/svg" width="300" height="420" viewBox="0 0 300 420">' +
     '<rect width="300" height="420" rx="12" fill="' + shade + '"/>' +
@@ -317,20 +318,9 @@ function fallbackCover(book) {
 }
 
 function setCover(image, book) {
-  // Always show a valid local SVG first; slow or missing remote covers cannot show broken-image icons.
-  const backup = fallbackCover(book);
+  // Generated covers use the same localized title as the catalog and details.
   image.onerror = null;
-  image.src = backup;
-  // Bulgarian mode uses localized generated covers; remote artwork may contain English text.
-  if (language === "bg") return;
-  const remote = typeof book.cover === "string" ? book.cover.trim() : "";
-  if (!/^https:\/\//i.test(remote)) return;
-  const loader = new Image();
-  loader.onload = () => {
-    if (loader.naturalWidth > 0) image.src = remote;
-  };
-  loader.onerror = () => { /* Keep the readable generated cover. */ };
-  loader.src = remote;
+  image.src = fallbackCover(book);
 }
 
 // BOOK CATALOG
