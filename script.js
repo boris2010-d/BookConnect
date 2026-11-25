@@ -691,7 +691,7 @@ db.auth.onAuthStateChange((_event,session)=>{
   currentUser=session?.user||null;
   updateAccount();
   // Defer database calls outside the auth callback.
-  setTimeout(()=>{loadReservations();loadBooksFromSupabase();},0);
+  setTimeout(()=>{loadReservations();loadBooksFromSupabase();personalLibrary.syncFavorites();},0);
 });
 let savedLanguage = "bg";
 try { savedLanguage = localStorage.getItem("bookconnect.language") === "en" ? "en" : "bg"; } catch (_) { /* Use default. */ }
@@ -701,4 +701,5 @@ db.auth.getUser().then(({data,error})=>{
   currentUser=error?null:data.user;
   updateAccount();
   loadReservations();
+  personalLibrary.syncFavorites();
 });
