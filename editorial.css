@@ -59,3 +59,5 @@ html:not([data-theme="dark"]) .personal-panel.personal-premium{background:linear
 .book-card .tag{font-size:11px}
 .book-card .available,.book-card .unavailable{font-size:12px}
 @media(max-width:650px){.editorial-menu-links{left:0;right:auto}}
+
+@media(min-width:1001px){#how .steps{grid-template-columns:repeat(5,minmax(0,1fr))}}
