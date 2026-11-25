@@ -31,6 +31,7 @@ const translations = {
     myBooks: "Моите книги",
     howNav: "Как работи",
     aboutNav: "За библиотеката",
+    heroEyebrow: "Училищна библиотека",
     welcome: "Добре дошъл в BookConnect",
     heroText: "Открий, резервирай и заеми книги от училищната библиотека.",
     searchPlaceholder: "Търси книга по заглавие, автор или тема...",
@@ -108,6 +109,7 @@ const translations = {
     myBooks: "My books",
     howNav: "How it works",
     aboutNav: "About the library",
+    heroEyebrow: "School library",
     welcome: "Welcome to BookConnect",
     heroText: "Discover, reserve and borrow books from your school library.",
     searchPlaceholder: "Search by title, author or topic...",
@@ -319,6 +321,8 @@ function setCover(image, book) {
   const backup = fallbackCover(book);
   image.onerror = null;
   image.src = backup;
+  // Bulgarian mode uses localized generated covers; remote artwork may contain English text.
+  if (language === "bg") return;
   const remote = typeof book.cover === "string" ? book.cover.trim() : "";
   if (!/^https:\/\//i.test(remote)) return;
   const loader = new Image();
