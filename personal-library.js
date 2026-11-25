@@ -22,6 +22,7 @@ const personalLibrary = (() => {
   const id=b=>String(b.id);
   let remoteFavorites = null, remoteOwner = null, pending = false;
   async function syncFavorites() {
+    void syncPremium();
     void syncChallenge();
     void syncReviews();
     void syncHistory();
@@ -104,7 +105,31 @@ const personalLibrary = (() => {
     catch(e){if(currentUser?.id===owner)showNotice(personalText("Промяната не е запазена.","Change could not be saved."));return false;}
     finally{challengeBusy=false;}
   }
-  function view(){const s=read();if(currentUser){s.favorites=remoteOwner===currentUser.id?(remoteFavorites||[]):[];s.recent=historyOwner===currentUser.id?remoteRecent:[];s.reviews=reviewOwner===currentUser.id?remoteReviews:{};s.goals=challengeOwner===currentUser.id?remoteGoals:{};s.finished=challengeOwner===currentUser.id?remoteFinished:{};}return s;}
+  let premiumOwner=null, premiumTrial=null, premiumLoaded=false, premiumVersion=0, premiumBusy=false;
+  async function syncPremium(){
+    const owner=currentUser?.id, version=++premiumVersion;
+    if(premiumOwner!==owner){premiumOwner=owner;premiumTrial=null;premiumLoaded=false;}
+    if(!owner)return false;
+    try{
+      const {data,error}=await db.from("premium_trials").select("started_at,expires_at").eq("user_id",owner).maybeSingle();
+      if(error)throw error;
+      if(currentUser?.id!==owner||version!==premiumVersion)return false;
+      premiumTrial=data;premiumLoaded=true;renderPersonalLibrary();return true;
+    }catch(e){if(currentUser?.id===owner)showNotice(personalText("Premium не е зареден.","Premium could not be loaded."));return false;}
+  }
+  async function activatePremium(){
+    const owner=currentUser?.id;
+    if(!owner||premiumBusy||!premiumLoaded||premiumOwner!==owner||premiumTrial)return false;
+    premiumBusy=true;
+    try{
+      const {error}=await db.from("premium_trials").insert({user_id:owner});
+      if(error&&error.code!=="23505")throw error;
+      if(currentUser?.id!==owner)return false;
+      return await syncPremium();
+    }catch(e){if(currentUser?.id===owner)showNotice(personalText("Premium не е активиран.","Premium could not be activated."));return false;}
+    finally{premiumBusy=false;}
+  }
+  function view(){const s=read();s.premiumUntil=0;s.premiumUsed=false;s.premiumLoaded=false;if(currentUser&&premiumOwner===currentUser.id){s.premiumUntil=premiumTrial?Date.parse(premiumTrial.expires_at):0;s.premiumUsed=!!premiumTrial;s.premiumLoaded=premiumLoaded;}if(currentUser){s.favorites=remoteOwner===currentUser.id?(remoteFavorites||[]):[];s.recent=historyOwner===currentUser.id?remoteRecent:[];s.reviews=reviewOwner===currentUser.id?remoteReviews:{};s.goals=challengeOwner===currentUser.id?remoteGoals:{};s.finished=challengeOwner===currentUser.id?remoteFinished:{};}return s;}
   let historyOwner=null, remoteRecent=[], historyVersion=0;
   async function syncHistory(){
     const owner=currentUser?.id;
@@ -136,7 +161,7 @@ const personalLibrary = (() => {
       .map((b,i)=>({b,i,score:weights.get(b.genre)||0}))
       .sort((a,b)=>b.score-a.score||a.i-b.i).slice(0,4).map(x=>x.b);
   }
-  return {read:view,change,id,favorite,toggle,visit,recommendations,syncFavorites,saveReview,saveGoal,markFinished};
+  return {read:view,change,id,favorite,toggle,visit,recommendations,syncFavorites,saveReview,saveGoal,markFinished,activatePremium};
 })();
 
 const personalText=(bg,en)=>language==="bg"?bg:en;
@@ -158,7 +183,7 @@ function renderPersonalLibrary() {
   const root=document.getElementById("personalLibrary");if(!root)return;
   const s=personalLibrary.read(),year=String(new Date().getFullYear());
   root.replaceChildren(personalElement("h2",personalText("Моята библиотека","My personal library")),
-    personalElement("p",personalText("Любимите книги, историята, ревютата и предизвикателствата се синхронизират при вход. Premium все още е локален.","Favorites, history, reviews and challenges sync when signed in. Premium is still local.")));
+    personalElement("p",personalText("Любимите книги, историята, ревютата и предизвикателствата се синхронизират при вход. Premium също се синхронизира.","Favorites, history, reviews and challenges sync when signed in. Premium also syncs.")));
   const tabs=personalElement("div",undefined,"personal-tabs");
   const choices=[["favorites",personalText("♥ Любими","♥ Favorites")],["recent",personalText("История","History")],["recommended",personalText("Препоръки","Recommendations")],["challenge",personalText("Предизвикателство","Challenge")],["premium","Premium"]];
   for(const [key,label] of choices){const b=personalButton(label,()=>{personalTab=key;renderPersonalLibrary();document.querySelector("#personalLibrary [aria-pressed=true]")?.focus();});b.setAttribute("aria-pressed",String(key===personalTab));tabs.append(b);}
@@ -186,9 +211,10 @@ function renderPersonalLibrary() {
   const active=s.premiumUntil>Date.now();
   panel.classList.add("personal-premium");
   panel.append(personalElement("h3","BookConnect Premium — €27 / "+personalText("година","year")),
-    personalElement("p",personalText("Безплатно демо за 1 месец. Без автоматично плащане или отключване на лицензирани книги.","Free one-month demo. No automatic payment or licensed content unlocked.")),
+    personalElement("p",personalText("Безплатен пробен месец. Без автоматично плащане.","Free one-month trial. No automatic payment.")),
     personalElement("p",active?personalText("Демо активен до ","Demo active until ")+new Date(s.premiumUntil).toLocaleDateString(language):personalText("Неактивен","Inactive")),
-    personalButton(active?personalText("Прекрати демото","End demo"):personalText("Активирай 1 месец безплатно","Activate one free month"),()=>{personalLibrary.change(v=>{const d=new Date();const day=d.getDate();d.setDate(1);d.setMonth(d.getMonth()+1);const last=new Date(d.getFullYear(),d.getMonth()+1,0).getDate();d.setDate(Math.min(day,last));v.premiumUntil=active?0:d.getTime();});renderPersonalLibrary();}));
+    personalElement("p",!currentUser?personalText("Влез, за да активираш пробния месец.","Sign in to activate your trial."):!s.premiumLoaded?personalText("Зареждане на Premium…","Loading Premium…"):s.premiumUsed?personalText("Пробният месец може да се активира само веднъж.","The trial can only be activated once."):personalText("Активирай своя безплатен месец.","Activate your free month.")));
+    if(currentUser&&s.premiumLoaded&&!s.premiumUsed)panel.append(personalButton(personalText("Активирай 1 месец безплатно","Activate one free month"),async()=>{if(await personalLibrary.activatePremium())renderPersonalLibrary();}));
   }
 }
 function renderPersonalDetails(book) {
