@@ -72,3 +72,8 @@ html:not([data-theme="dark"]) .personal-panel.personal-premium{background:linear
 .profile-menu .editorial-menu-links a:hover{color:var(--bc-link);text-decoration:underline}
 .nav-right .editorial-menu summary:focus-visible{outline:2px solid var(--bc-link);outline-offset:4px;border-radius:4px}
 @media(max-width:650px){.nav-right .editorial-menu-links{left:auto;right:0}}
+
+/* Fluid catalog: use the viewport rather than a fixed five-column layout. */
+#catalog .container, .container#catalog {max-width:none;width:100%;box-sizing:border-box;padding-inline:clamp(16px,4vw,64px)}
+#catalog .book-grid{grid-template-columns:repeat(auto-fill,minmax(min(100%,180px),1fr));gap:clamp(16px,2vw,32px)}
+@media(max-width:650px){#catalog .book-grid{grid-template-columns:repeat(auto-fill,minmax(min(100%,140px),1fr))}}
