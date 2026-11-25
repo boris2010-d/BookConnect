@@ -359,10 +359,48 @@ function setCover(image, book) {
   if (!source && match && language === "en") source = "https://covers.openlibrary.org/b/isbn/" + match[1] + "-L.jpg?default=false";
   image.onerror = () => { image.onerror = null; image.src = fallback; };
   const title = String(book.title?.bg || "").trim().toLocaleLowerCase("bg-BG");
-  const artwork = {"под игото":"pod-igoto","бай ганьо":"bay-ganyo","малкият принц":"little-prince","хари потър и философският камък":"harry-potter","хобит":"hobbit"};
+  const artwork = {
+  "1984": "BookConnect-new-covers-part1/1984.jpg",
+  "под игото": "assets/editorial/pod-igoto.jpg",
+  "бай ганьо": "assets/editorial/bay-ganyo.jpg",
+  "малкият принц": "assets/editorial/little-prince.jpg",
+  "хари потър и философският камък": "assets/editorial/harry-potter.jpg",
+  "хобит": "assets/editorial/hobbit.jpg",
+  "граф монте кристо": "BookConnect-new-covers-part1/graf-monte-kristo.jpg",
+  "алхимикът": "BookConnect-new-covers-part2/alchemist.jpg",
+  "цветя за алджърнън": "BookConnect-new-covers-part2/flowers-for-algernon.jpg",
+  "пипи дългото чорапче": "BookConnect-new-covers-part2/pippi-longstocking.jpg",
+  "ян бибиян": "BookConnect-new-covers-part2/yan-bibiyan.jpg",
+  "алиса в страната на чудесата": "BookConnect-new-covers-part3/alice.jpg",
+  "престъпление и наказание": "BookConnect-new-covers-part3/crime-and-punishment.jpg",
+  "дон кихот": "BookConnect-new-covers-part3/don-quixote.jpg",
+  "андрешко": "BookConnect-new-covers-part4/andreshko.jpg",
+  "чичовци": "BookConnect-new-covers-part4/chichovtsi.jpg",
+  "магьосникът от землемория": "BookConnect-new-covers-part4/earthsea.jpg",
+  "гераците": "BookConnect-new-covers-part4/geratsite.jpg",
+  "гордост и предразсъдъци": "BookConnect-new-covers-part4/pride-and-prejudice.jpg",
+  "фермата на животните": "BookConnect-new-covers-part5/fermata-na-zhivotnite.jpg",
+  "крадецът на книги": "BookConnect-new-covers-part5/kradetsat-na-knigi.jpg",
+  "мери попинз": "BookConnect-new-covers-part5/meri-popinz.jpg",
+  "повелителят на мухите": "BookConnect-new-covers-part5/povelitelyat-na-muhite.jpg",
+  "железният светилник": "BookConnect-new-covers-part5/zhelezniyat-svetilnik.jpg",
+  "ерагон": "BookConnect-new-covers-part6/eragon.jpg",
+  "мечо пух": "BookConnect-new-covers-part6/mecho-puh.jpg",
+  "моби дик": "BookConnect-new-covers-part6/mobi-dik.jpg",
+  "немили-недраги": "BookConnect-new-covers-part6/nemili-nedragi.jpg",
+  "приказки": "BookConnect-new-covers-part6/prikazki.jpg",
+  "да убиеш присмехулник": "BookConnect-new-covers-part6/to-kill-a-mockingbird.jpg",
+  "тютюн": "BookConnect-new-covers-part6/tyutyun.jpg",
+  "емил от льонеберя": "BookConnect-new-covers-part7/emil.jpg",
+  "игра на тронове": "BookConnect-new-covers-part7/game-of-thrones.jpg",
+  "лъвът, вещицата и дрешникът": "BookConnect-new-covers-part7/narnia.jpg",
+  "приключенията на том сойер": "BookConnect-new-covers-part7/tom-sawyer.jpg",
+  "задругата на пръстена": "Задругата на пръстена под планините.png",
+  "немили – недраги": "BookConnect-new-covers-part6/nemili-nedragi.jpg"
+};
   if (language === "bg" && Object.hasOwn(artwork,title)) {
     image.onerror = () => { image.onerror = () => { image.onerror=null; image.src=fallback; }; image.src=source||fallback; };
-    image.src="assets/editorial/"+artwork[title]+".jpg";
+    image.src=artwork[title];
   } else image.src = source || fallback;
 }
 
