@@ -22,6 +22,7 @@ const personalLibrary = (() => {
   const id=b=>String(b.id);
   let remoteFavorites = null, remoteOwner = null, pending = false;
   async function syncFavorites() {
+    void syncChallenge();
     void syncReviews();
     void syncHistory();
     const owner=currentUser?.id;
@@ -71,7 +72,39 @@ const personalLibrary = (() => {
       return currentUser?.id===owner;
     }catch(e){if(currentUser?.id===owner)showNotice(personalText("Ревюто не е променено.","Review could not be changed."));return false;}
   }
-  function view(){const s=read();if(currentUser){s.favorites=remoteOwner===currentUser.id?(remoteFavorites||[]):[];s.recent=historyOwner===currentUser.id?remoteRecent:[];s.reviews=reviewOwner===currentUser.id?remoteReviews:{};}return s;}
+  let challengeOwner=null, remoteGoals={}, remoteFinished={}, challengeVersion=0, challengeBusy=false;
+  async function syncChallenge(){
+    const owner=currentUser?.id, version=++challengeVersion;
+    if(challengeOwner!==owner){challengeOwner=owner;remoteGoals={};remoteFinished={};}
+    if(!owner)return false;
+    try{
+      const [g,c]=await Promise.all([db.from("reading_challenges").select("year,target_books").eq("user_id",owner),db.from("completed_books").select("book_id,completed_at").eq("user_id",owner)]);
+      if(g.error||c.error)throw g.error||c.error;
+      if(currentUser?.id!==owner||version!==challengeVersion)return false;
+      remoteGoals=Object.fromEntries(g.data.map(r=>[String(r.year),r.target_books]));
+      remoteFinished={};
+      for(const r of c.data){const y=String(new Date(r.completed_at).getFullYear());(remoteFinished[y]??=[]).push(String(r.book_id));}
+      renderPersonalLibrary();return true;
+    }catch(e){if(currentUser?.id===owner)showNotice(personalText("Предизвикателството не е заредено.","Challenge could not be loaded."));return false;}
+  }
+  async function saveGoal(year,target){
+    const owner=currentUser?.id;
+    if(!owner)return change(v=>v.goals[year]=target);
+    return challengeWrite(owner,()=>db.from("reading_challenges").upsert({user_id:owner,year:Number(year),target_books:target},{onConflict:"user_id,year"}));
+  }
+  async function markFinished(book,year,finished){
+    const owner=currentUser?.id, bookId=id(book);
+    if(!owner)return change(v=>{const a=v.finished[year]||[];v.finished[year]=finished?a.filter(x=>x!==bookId):[...new Set([...a,bookId])];});
+    return challengeWrite(owner,()=>finished?db.from("completed_books").delete().eq("user_id",owner).eq("book_id",bookId):db.from("completed_books").upsert({user_id:owner,book_id:bookId,completed_at:new Date().toISOString()},{onConflict:"user_id,book_id"}));
+  }
+  async function challengeWrite(owner,operation){
+    if(challengeBusy)return false;
+    challengeBusy=true;
+    try{const {error}=await operation();if(error)throw error;if(currentUser?.id!==owner)return false;return await syncChallenge();}
+    catch(e){if(currentUser?.id===owner)showNotice(personalText("Промяната не е запазена.","Change could not be saved."));return false;}
+    finally{challengeBusy=false;}
+  }
+  function view(){const s=read();if(currentUser){s.favorites=remoteOwner===currentUser.id?(remoteFavorites||[]):[];s.recent=historyOwner===currentUser.id?remoteRecent:[];s.reviews=reviewOwner===currentUser.id?remoteReviews:{};s.goals=challengeOwner===currentUser.id?remoteGoals:{};s.finished=challengeOwner===currentUser.id?remoteFinished:{};}return s;}
   let historyOwner=null, remoteRecent=[], historyVersion=0;
   async function syncHistory(){
     const owner=currentUser?.id;
@@ -103,7 +136,7 @@ const personalLibrary = (() => {
       .map((b,i)=>({b,i,score:weights.get(b.genre)||0}))
       .sort((a,b)=>b.score-a.score||a.i-b.i).slice(0,4).map(x=>x.b);
   }
-  return {read:view,change,id,favorite,toggle,visit,recommendations,syncFavorites,saveReview};
+  return {read:view,change,id,favorite,toggle,visit,recommendations,syncFavorites,saveReview,saveGoal,markFinished};
 })();
 
 const personalText=(bg,en)=>language==="bg"?bg:en;
@@ -125,7 +158,7 @@ function renderPersonalLibrary() {
   const root=document.getElementById("personalLibrary");if(!root)return;
   const s=personalLibrary.read(),year=String(new Date().getFullYear());
   root.replaceChildren(personalElement("h2",personalText("Моята библиотека","My personal library")),
-    personalElement("p",personalText("Любимите книги, историята и ревютата се синхронизират при вход. Другите лични данни са локални.","Favorites, history and reviews sync when signed in. Other personal data is local.")));
+    personalElement("p",personalText("Любимите книги, историята, ревютата и предизвикателствата се синхронизират при вход. Premium все още е локален.","Favorites, history, reviews and challenges sync when signed in. Premium is still local.")));
   const tabs=personalElement("div",undefined,"personal-tabs");
   const choices=[["favorites",personalText("♥ Любими","♥ Favorites")],["recent",personalText("История","History")],["recommended",personalText("Препоръки","Recommendations")],["challenge",personalText("Предизвикателство","Challenge")],["premium","Premium"]];
   for(const [key,label] of choices){const b=personalButton(label,()=>{personalTab=key;renderPersonalLibrary();document.querySelector("#personalLibrary [aria-pressed=true]")?.focus();});b.setAttribute("aria-pressed",String(key===personalTab));tabs.append(b);}
@@ -147,7 +180,7 @@ function renderPersonalLibrary() {
   const label=personalElement("label",personalText("Цел (книги): ","Goal (books): "));
   const input=personalElement("input");input.type="number";input.min="1";input.max="365";input.value=String(goal);label.append(input);
   const progress=personalElement("progress");progress.max=goal;progress.value=Math.min(done,goal);
-  panel.append(label,personalButton(personalText("Запази целта","Save goal"),()=>{if(input.reportValidity()&&Number.isInteger(Number(input.value))&&Number(input.value)>=1&&Number(input.value)<=365){personalLibrary.change(v=>v.goals[year]=Number(input.value));renderPersonalLibrary();}}),personalElement("p",done+" / "+goal),progress);
+  panel.append(label,personalButton(personalText("Запази целта","Save goal"),async()=>{if(input.reportValidity()&&Number.isInteger(Number(input.value))&&Number(input.value)>=1&&Number(input.value)<=365){if(await personalLibrary.saveGoal(year,Number(input.value)))renderPersonalLibrary();}}),personalElement("p",done+" / "+goal),progress);
   }
   if(personalTab==="premium") {
   const active=s.premiumUntil>Date.now();
@@ -163,8 +196,8 @@ function renderPersonalDetails(book) {
   root.replaceChildren();
   const id=personalLibrary.id(book),s=personalLibrary.read(),year=String(new Date().getFullYear());
   const finished=Array.isArray(s.finished[year])&&s.finished[year].includes(id);
-  root.append(personalButton(finished?personalText("Отмени прочетена","Undo finished"):personalText("Отбележи като прочетена","Mark as finished"),()=>{
-    personalLibrary.change(v=>{const a=Array.isArray(v.finished[year])?v.finished[year]:[];v.finished[year]=finished?a.filter(x=>x!==id):[...new Set([...a,id])];});renderPersonalDetails(book);renderPersonalLibrary();
+  root.append(personalButton(finished?personalText("Отмени прочетена","Undo finished"):personalText("Отбележи като прочетена","Mark as finished"),async()=>{
+    if(await personalLibrary.markFinished(book,year,finished)){if(root.contains(rating))renderPersonalDetails(book);renderPersonalLibrary();}
   }));
   const review=s.reviews[id]||{};
   const rating=personalElement("select");rating.setAttribute("aria-label",personalText("Оценка","Rating"));
