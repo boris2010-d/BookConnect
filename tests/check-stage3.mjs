@@ -14,7 +14,8 @@ assert.match(js,/auth\.signOut/);
 assert.match(js,/\.rpc\("reserve_book"/);
 assert.match(js,/\.rpc\("cancel_my_reservation"/);
 assert.match(js,/\.from\("reservations"\)/);
-assert.doesNotMatch(js,/localStorage\.setItem\(/);
+// Only the language preference may be persisted locally in the reservation script.
+assert.doesNotMatch(js.replace(/localStorage\.setItem\("bookconnect\.language",\s*lang\)/g, ""), /localStorage\.setItem\s*\(/);
 assert.match(sql,/FOR UPDATE/i);
 assert.match(sql,/pg_advisory_xact_lock/i);
 assert.match(sql,/UNIQUE/i);
