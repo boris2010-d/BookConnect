@@ -31,8 +31,10 @@ const translations = {
     myBooks: "Моите книги",
     howNav: "Как работи",
     aboutNav: "За библиотеката",
-    welcome: "Добре дошъл в BookConnect",
-    heroText: "Открий, резервирай и заеми книги от училищната библиотека.",
+    heroEyebrow: "Училищна дигитална библиотека",
+    welcome: "Книги, които свързват.",
+    personalNav: "Моята библиотека",
+    heroText: "Откривай, резервирай и чети книги от нашата училищна библиотека — навсякъде и по всяко време.",
     searchPlaceholder: "Търси книга по заглавие, автор или тема...",
     search: "Търси",
     browse: "Разгледай каталога",
@@ -43,7 +45,7 @@ const translations = {
     borrowDesc: "Вземи книга от библиотеката",
     stats: "Моите книги",
     statsDesc: "Проследи резервациите си",
-    newBooks: "Книги в каталога",
+    newBooks: "Книги, с които да започнеш",
     filterPlaceholder: "Търси по заглавие или автор...",
     allGenres: "Всички жанрове",
     classic: "Класика",
@@ -68,6 +70,8 @@ const translations = {
     step3Desc: "Вземи книгата от библиотекаря.",
     step4: "4. Върни",
     step4Desc: "Върни книгата в определения срок.",
+    step5: "5. Добави в любими",
+    step5Desc: "Запази любимите си книги в личната си библиотека, за да ги намираш лесно по всяко време.",
     myReservations: "Моите резервации",
     demoNote: "Реални резервации в Supabase за влезлия потребител.",
     noReservations: "Все още нямаш резервации.",
@@ -108,8 +112,10 @@ const translations = {
     myBooks: "My books",
     howNav: "How it works",
     aboutNav: "About the library",
-    welcome: "Welcome to BookConnect",
-    heroText: "Discover, reserve and borrow books from your school library.",
+    heroEyebrow: "School digital library",
+    welcome: "Books that bring us together.",
+    personalNav: "My library",
+    heroText: "Discover, reserve and read books from our school library — wherever you are.",
     searchPlaceholder: "Search by title, author or topic...",
     search: "Search",
     browse: "Browse catalog",
@@ -120,7 +126,7 @@ const translations = {
     borrowDesc: "Collect a book from the library",
     stats: "My books",
     statsDesc: "Track your reservations",
-    newBooks: "Books in the catalog",
+    newBooks: "Books to begin with",
     filterPlaceholder: "Search by title or author...",
     allGenres: "All genres",
     classic: "Classic",
@@ -145,6 +151,8 @@ const translations = {
     step3Desc: "Collect the book from the librarian.",
     step4: "4. Return",
     step4Desc: "Return the book before its due date.",
+    step5: "5. Add to favorites",
+    step5Desc: "Save your favorite books in your personal library so you can find them anytime.",
     myReservations: "My reservations",
     demoNote: "Real Supabase reservations for the signed-in user.",
     noReservations: "You have no reservations yet.",
@@ -194,6 +202,14 @@ async function loadReservations() {
   renderReservations(); renderBooks();
 }
 function updateAccount() {
+  const avatar = document.getElementById("profileAvatar");
+  if (avatar) {
+    if (!avatar.dataset.guestIcon) avatar.dataset.guestIcon = avatar.innerHTML;
+    if (currentUser) {
+      const name = String(currentUser.user_metadata?.full_name || currentUser.email || "U").trim();
+      avatar.textContent = Array.from(name)[0]?.toUpperCase() || "U";
+    } else avatar.innerHTML = avatar.dataset.guestIcon;
+  }
   document.getElementById("accountForm").hidden = Boolean(currentUser);
   document.getElementById("signOutBtn").hidden = !currentUser;
   document.getElementById("accountStatus").textContent =
@@ -203,8 +219,12 @@ function updateAccount() {
 // LANGUAGE SWITCHING
 
 function setLanguage(lang) {
-  language = lang;
+  language = lang === "en" ? "en" : "bg";
+  lang = language;
+  try { localStorage.setItem("bookconnect.language", lang); } catch (_) { /* Storage may be disabled. */ }
   document.documentElement.lang = lang;
+  const currentLanguage = document.getElementById("currentLanguage");
+  if (currentLanguage) currentLanguage.textContent = lang.toUpperCase();
   window.bookConnectTheme?.updateButton?.();
 
   document.querySelectorAll("[data-i18n]").forEach(element => {
@@ -286,7 +306,7 @@ async function loadBooksFromSupabase() {
 function fallbackCover(book) {
   const palette = ["#1c3b61", "#80502e", "#365d4d", "#713b55", "#624a8c", "#945c31"];
   const shade = palette[Math.abs(Number(book.id) || 0) % palette.length];
-  const title = String(book.title?.[language] || book.title?.bg || "Book");
+  const title = String(book.title?.bg || book.title?.en || "Book");
   const words = title.trim().split(/\s+/);
   const lines = [];
   let line = "";
@@ -301,57 +321,131 @@ function fallbackCover(book) {
   if (line) lines.push(line);
   const escapeXml = value => String(value).replace(/[&<>"']/g, char =>
     ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&apos;"}[char]));
-  const maxLines = lines.slice(0, 4);
-  if (lines.length > 4) maxLines[3] += "…";
+  const maxLines = lines;
+  const fontSize = Math.min(27, 250 / Math.max(1, ...maxLines.map(value => value.length)) * 1.55, 230 / Math.max(1, maxLines.length));
+  const lineHeight = fontSize * 1.4;
   const text = maxLines.map((value, i) =>
-    '<text x="150" y="' + (222 - (maxLines.length - 1) * 20 + i * 40) +
-    '" font-size="27" font-family="Arial,sans-serif" font-weight="bold" text-anchor="middle" fill="#ffffff">' +
+    '<text x="150" y="' + (210 - (maxLines.length - 1) * lineHeight / 2 + i * lineHeight) +
+    '" font-size="' + fontSize + '" font-family="Arial,sans-serif" font-weight="bold" text-anchor="middle" fill="#ffffff">' +
     escapeXml(value) + '</text>').join("");
+  const motifs = [
+    '<path d="M45 140L110 65L165 140L210 90L255 140Z" fill="#ffffff" opacity=".35"/><circle cx="215" cy="65" r="23" fill="#f4d49a"/>',
+    '<path d="M150 45L164 80L202 83L173 107L182 145L150 124L118 145L127 107L98 83L136 80Z" fill="#f4d49a"/>',
+    '<path d="M150 145V55M150 100Q70 100 75 50Q145 45 150 100M150 120Q230 120 225 70Q155 65 150 120" stroke="#f4d49a" stroke-width="5" fill="none"/>',
+    '<circle cx="150" cy="95" r="48" fill="none" stroke="#f4d49a" stroke-width="3"/><path d="M150 48L165 95L150 142L135 95Z" fill="#f4d49a"/>'
+  ];
+  const hash = Array.from(title).reduce((n,c)=>(n+c.codePointAt(0))%4,0);
   const svg = '<svg xmlns="http://www.w3.org/2000/svg" width="300" height="420" viewBox="0 0 300 420">' +
     '<rect width="300" height="420" rx="12" fill="' + shade + '"/>' +
     '<rect x="22" y="22" width="256" height="376" rx="5" fill="none" stroke="#ffffff" stroke-opacity=".35" stroke-width="2"/>' +
-    text + '<text x="150" y="364" font-family="Arial,sans-serif" font-size="14" letter-spacing="2" text-anchor="middle" fill="#f0e6d7">BOOKCONNECT</text></svg>';
+    motifs[hash] + text + '<text x="150" y="364" font-family="Arial,sans-serif" font-size="14" letter-spacing="2" text-anchor="middle" fill="#f0e6d7">BOOKCONNECT</text></svg>';
   return "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
 }
 
 function setCover(image, book) {
-  // Always show a valid local SVG first; slow or missing remote covers cannot show broken-image icons.
-  const backup = fallbackCover(book);
-  image.onerror = null;
-  image.src = backup;
-  const remote = typeof book.cover === "string" ? book.cover.trim() : "";
-  if (!/^https:\/\//i.test(remote)) return;
-  const loader = new Image();
-  loader.onload = () => {
-    if (loader.naturalWidth > 0) image.src = remote;
-  };
-  loader.onerror = () => { /* Keep the readable generated cover. */ };
-  loader.src = remote;
+  const fallback = fallbackCover(book);
+  const known = [
+    [/^the hobbit$/i, "9780547928227"],
+    [/^the little prince$/i, "9780156012195"],
+    [/^harry potter and the philosopher.s stone$/i, "9780747532699"],
+    [/^harry potter and the sorcerer.s stone$/i, "9780590353427"]
+  ];
+  const match = known.find(([pattern]) => pattern.test(String(book.title?.en || "").trim()));
+  let source = null;
+  try {
+    const url = new URL(book.cover || "", location.href);
+    if (book.cover && url.protocol === "https:" && !/placeholder|placehold\.co|dummyimage|picsum/i.test(url.hostname)) source = url.href;
+  } catch {}
+  if (!source && match) source = "https://covers.openlibrary.org/b/isbn/" + match[1] + "-L.jpg?default=false";
+  image.onerror = () => { image.onerror = null; image.src = fallback; };
+  const title = String(book.title?.bg || "").trim().toLocaleLowerCase("bg-BG");
+  const artwork = {
+  "1984": "BookConnect-new-covers-part1/1984.jpg",
+  "под игото": "Под игото_ Залез над България-1.png",
+  "бай ганьо": "Бай Ганьо на гарата-6.png",
+  "малкият принц": "Малкият принц под звездите.png",
+  "хари потър и философският камък": "Магическа нощ над Хогуортс.png",
+  "хобит": "Златният дом на хобита-7.png",
+  "граф монте кристо": "BookConnect-new-covers-part1/graf-monte-kristo.jpg",
+  "алхимикът": "BookConnect-new-covers-part2/alchemist.jpg",
+  "цветя за алджърнън": "BookConnect-new-covers-part2/flowers-for-algernon.jpg",
+  "пипи дългото чорапче": "BookConnect-new-covers-part2/pippi-longstocking.jpg",
+  "ян бибиян": "BookConnect-new-covers-part2/yan-bibiyan.jpg",
+  "алиса в страната на чудесата": "BookConnect-new-covers-part3/alice.jpg",
+  "престъпление и наказание": "BookConnect-new-covers-part3/crime-and-punishment.jpg",
+  "дон кихот": "BookConnect-new-covers-part3/don-quixote.jpg",
+  "андрешко": "BookConnect-new-covers-part4/andreshko.jpg",
+  "чичовци": "BookConnect-new-covers-part4/chichovtsi.jpg",
+  "магьосникът от землемория": "BookConnect-new-covers-part4/earthsea.jpg",
+  "гераците": "BookConnect-new-covers-part4/geratsite.jpg",
+  "гордост и предразсъдъци": "BookConnect-new-covers-part4/pride-and-prejudice.jpg",
+  "фермата на животните": "BookConnect-new-covers-part5/fermata-na-zhivotnite.jpg",
+  "крадецът на книги": "BookConnect-new-covers-part5/kradetsat-na-knigi.jpg",
+  "мери попинз": "BookConnect-new-covers-part5/meri-popinz.jpg",
+  "повелителят на мухите": "BookConnect-new-covers-part5/povelitelyat-na-muhite.jpg",
+  "железният светилник": "BookConnect-new-covers-part5/zhelezniyat-svetilnik.jpg",
+  "ерагон": "BookConnect-new-covers-part6/eragon.jpg",
+  "мечо пух": "BookConnect-new-covers-part6/mecho-puh.jpg",
+  "моби дик": "BookConnect-new-covers-part6/mobi-dik.jpg",
+  "немили-недраги": "BookConnect-new-covers-part6/nemili-nedragi.jpg",
+  "приказки": "BookConnect-new-covers-part6/prikazki.jpg",
+  "да убиеш присмехулник": "BookConnect-new-covers-part6/to-kill-a-mockingbird.jpg",
+  "тютюн": "BookConnect-new-covers-part6/tyutyun.jpg",
+  "емил от льонеберя": "BookConnect-new-covers-part7/emil.jpg",
+  "игра на тронове": "BookConnect-new-covers-part7/game-of-thrones.jpg",
+  "лъвът, вещицата и дрешникът": "BookConnect-new-covers-part7/narnia.jpg",
+  "приключенията на том сойер": "BookConnect-new-covers-part7/tom-sawyer.jpg",
+  "задругата на пръстена": "Задругата на пръстена под планините.png",
+  "немили – недраги": "BookConnect-new-covers-part6/nemili-nedragi.jpg"
+};
+  if (Object.hasOwn(artwork,title)) {
+    image.onerror = () => { image.onerror = () => { image.onerror=null; image.src=fallback; }; image.src=source||fallback; };
+    image.src=artwork[title];
+  } else image.src = source || fallback;
 }
 
 // BOOK CATALOG
 
-function renderBooks() {
-  const query = document.getElementById("catalogSearch")
-    .value.trim().toLocaleLowerCase();
+function normalizeSearch(value) {
+  return String(value ?? "").normalize("NFC").toLocaleLowerCase("bg-BG").trim().replace(/\s+/g," ");
+}
 
+function rankCatalog(items, query) {
+  const q = normalizeSearch(query);
+  if (!q) return items;
+  const terms = q.split(" ");
+  return items.map((book, index) => {
+    const titles = [book.title.bg, book.title.en].map(normalizeSearch);
+    const authors = [book.author.bg, book.author.en].map(normalizeSearch);
+    const genres = [translations.bg[book.genre], translations.en[book.genre]].map(normalizeSearch);
+    let score = titles.includes(q) ? 100 : 0;
+    for (const term of terms) {
+      if (titles.some(v => v.startsWith(term))) score += 50;
+      else if (titles.some(v => v.includes(term))) score += 30;
+      else if (authors.some(v => v.includes(term))) score += 20;
+      else if (genres.some(v => v.includes(term))) score += 10;
+      else return {book, index, score: -1};
+    }
+    return {book, index, score};
+  }).filter(item => item.score >= 0)
+    .sort((a,b) => b.score-a.score || Number(remainingCopies(b.book)>0)-Number(remainingCopies(a.book)>0) || a.index-b.index)
+    .map(item => item.book);
+}
+
+function renderBooks() {
+  const query = document.getElementById("catalogSearch").value;
   const genre = document.getElementById("genreFilter").value;
   const availability = document.getElementById("availabilityFilter").value;
+  const filtered = rankCatalog(books.filter(book =>
+    (genre === "all" || book.genre === genre) &&
+    (availability === "all" || remainingCopies(book) > 0)
+  ), query);
 
-  const filtered = books.filter(book => {
-    const searchableText = [
-      book.title.bg,
-      book.title.en,
-      book.author.bg,
-      book.author.en,
-      t(book.genre)
-    ].join(" ").toLocaleLowerCase();
-
-    return searchableText.includes(query)
-      && (genre === "all" || book.genre === genre)
-      && (availability === "all" || remainingCopies(book) > 0);
-  });
-
+  if (!query.trim() && genre === "all" && availability === "all") {
+    const featured = ["под игото","бай ганьо","малкият принц","хари потър и философският камък","хобит"];
+    const position = book => { const i = featured.indexOf(String(book.title?.bg || "").trim().toLocaleLowerCase("bg-BG")); return i < 0 ? featured.length : i; };
+    filtered.sort((a,b) => position(a)-position(b));
+  }
   const grid = document.getElementById("bookGrid");
   grid.innerHTML = "";
 
@@ -394,23 +488,13 @@ function renderBooks() {
     button.addEventListener("click", () => openBook(book.id));
 
     card.append(image, title, author, genreTag, count, button);
+    if (typeof favoriteButton === "function") card.append(favoriteButton(book));
     grid.appendChild(card);
   });
 
   document.getElementById("noResults").style.display =
     filtered.length ? "none" : "block";
-}
-
-// HERO SEARCH
-
-function heroSearch() {
-  document.getElementById("catalogSearch").value =
-    document.getElementById("heroSearch").value;
-
-  renderBooks();
-
-  document.getElementById("catalog")
-    .scrollIntoView({ behavior: "smooth" });
+  if (typeof renderPersonalLibrary === "function") { renderPersonalLibrary(); updateSearchSuggestions(); }
 }
 
 // BOOK DETAILS MODAL
@@ -419,6 +503,7 @@ function openBook(id) {
   const book = books.find(book => book.id === id);
   if (!book) return;
 
+  if (typeof personalLibrary !== "undefined" && selectedBookId !== id) personalLibrary.visit(book);
   selectedBookId = id;
 
   document.getElementById("modalTitle").textContent =
@@ -452,6 +537,7 @@ function openBook(id) {
   button.disabled = pendingReservation || alreadyReserved || remaining === 0;
   button.style.opacity = button.disabled ? ".5" : "1";
 
+  if (typeof renderPersonalDetails === "function") { renderPersonalDetails(book); renderPersonalLibrary(); }
   document.getElementById("bookModal").classList.add("open");
   document.body.style.overflow = "hidden";
 }
@@ -570,12 +656,7 @@ document.getElementById("genreFilter")
 document.getElementById("availabilityFilter")
   .addEventListener("change", renderBooks);
 
-document.getElementById("heroSearch")
-  .addEventListener("keydown", event => {
-    if (event.key === "Enter") {
-      heroSearch();
-    }
-  });
+
 
 document.addEventListener("keydown", event => {
   if (event.key === "Escape") {
@@ -610,12 +691,15 @@ db.auth.onAuthStateChange((_event,session)=>{
   currentUser=session?.user||null;
   updateAccount();
   // Defer database calls outside the auth callback.
-  setTimeout(()=>{loadReservations();loadBooksFromSupabase();},0);
+  setTimeout(()=>{loadReservations();loadBooksFromSupabase();personalLibrary.syncFavorites();},0);
 });
-setLanguage("bg");
+let savedLanguage = "bg";
+try { savedLanguage = localStorage.getItem("bookconnect.language") === "en" ? "en" : "bg"; } catch (_) { /* Use default. */ }
+setLanguage(savedLanguage);
 loadBooksFromSupabase();
 db.auth.getUser().then(({data,error})=>{
   currentUser=error?null:data.user;
   updateAccount();
   loadReservations();
+  personalLibrary.syncFavorites();
 });
